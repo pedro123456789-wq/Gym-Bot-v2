@@ -8,7 +8,7 @@ SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 
 app = Flask(__name__)
-cors = CORS(app)
+cors = CORS(app, supports_credentials = True)
 app.config['DEBUG'] = True
 app.config['SECRET_KEY'] = 'test_key' #change in production
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
