@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 
 
-def custom_response(success: bool, message: str, errorCode: int = 400, **others):
+def customResponse(success: bool, message: str, errorCode: int = 400, **others):
     new_response = make_response(jsonify({
         'success' : success, 
         'message' : message,
