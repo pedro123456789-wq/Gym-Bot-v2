@@ -1,5 +1,7 @@
 import Navbar from "../NavBar/Navbar";
 import {useState} from 'react';
+import RequestHandler from "../RequestHandler/RequestHandler";
+import LoadingIndicator from "../LoadingIndicator/LoadingIndicator";
 
 
 function SignUpPage() {
@@ -8,9 +10,15 @@ function SignUpPage() {
     const [password, setPassword] = useState<string>();
     const [passwordConfirmation, setPasswordConfirmation] = useState<string>();
 
+    const [isLoading, toggleLoad] = useState<boolean>(false);
+
 
     function createAccount(){
-
+        RequestHandler.Post('sign-up', {'username' : userName, 'password' : password, 'email' : email}).then(
+            (response) => {
+                alert(response.message)
+            }
+        )
     }
 
 
@@ -25,6 +33,10 @@ function SignUpPage() {
 
 
             <div className = 'text-center mt-5'>
+                {isLoading &&
+                    <LoadingIndicator />
+                }
+                
                 <form>
                     <div className = 'form-group'>
                         <label htmlFor = 'email'>Email</label>
