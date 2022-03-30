@@ -15,8 +15,8 @@ class User(db.Model):
     username = db.Column(db.String, unique = True, nullable = False)
     email = db.Column(db.String, unique = True, nullable = False)
     password = db.Column(db.String, unique = False, nullable = False)
+    confirmationCode = db.Column(db.String, unique = False, nullable = False)
     emailConfirmed = db.Column(db.Boolean, unique = False, default = False)
-    emailConfirmationDate = db.Column(db.DateTime, nullable = True)
     
     foodRecords = db.relationship('FoodRecord', backref = 'user')
     fitnessData = db.relationship('FitnessData', backref = 'user', uselist = False)
