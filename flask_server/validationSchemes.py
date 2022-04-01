@@ -24,3 +24,21 @@ signUpSchema = {
     }, 
     'required' : ['username', 'email', 'password']
 }
+
+
+
+confirmEmailSchema = {
+    'type' : 'object', 
+    'properties' : {
+        'username' : {
+            'type' : 'string', 
+            'minLength' : 1, 
+            'maxLength' : 40
+        }, 
+        'confirmationCode' : {
+            'type' : 'string',
+            'length' : 5
+        }
+    }, 
+    'required' : ['username', 'confirmationCode']
+}
