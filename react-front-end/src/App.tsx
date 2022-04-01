@@ -4,6 +4,7 @@ import {
   Routes,
   Outlet
 } from "react-router-dom";
+import EmailConfirmationPage from "./Components/EmailConfirmationPage/EmailConfirmationPage";
 import FeaturesPage from "./Components/FeaturesPage/FeaturesPage";
 import LandingPage from './Components/LandingPage/LandingPage';
 import LoginPage from "./Components/LoginPage/LoginPage";
@@ -19,6 +20,7 @@ function App(): JSX.Element {
           <Route path = '/log-in' element = {<LoginPage />} />
           <Route path = '/sign-up' element = {<SignUpPage />} />
           <Route path = '/features' element = {<FeaturesPage />} />
+          <Route path = '/confirm-email' element = {<EmailConfirmationPage />} />
         </Routes>
       </div>
     </BrowserRouter>
