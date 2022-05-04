@@ -1,12 +1,67 @@
 import {useState} from 'react';
 import Navbar from '../NavBar/Navbar';
+import RequestHandler from '../RequestHandler/RequestHandler';
+import Alert, {alertProps} from '../Alert/Alert';
+import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
+import {useNavigate} from 'react-router-dom';
+
 
 function EmailConfirmationPage() {
-    const [confirmationCode, setConfirmationCode] = useState<number>(0)
+    const [confirmationCode, setConfirmationCode] = useState<number>(0);
+    const [alertData, setAlert] = useState<alertProps>({message: '', isSuccess: false});
+    const [showAlert, toggleAlert] = useState<boolean>(false);
+    const [isLoading, toggleLoad] = useState<boolean>(false);
+    
+    const navigate = useNavigate();
+
+
+    function confirmEmail(){
+        toggleLoad(true);
+
+        // get username from local storage 
+        const userName:string  = window.localStorage.getItem('username') || '';
+
+        RequestHandler.sendRequest('PUT', 
+                                   'confirm-email', 
+                                   {'username' : userName, 
+                                    'confirmationCode' : confirmationCode}
+        ).then(
+            (response) => {
+                toggleLoad(false);
+                toggleAlert(true);
+
+                if (response.success){
+                    setAlert({
+                         message: 'Account verified', 
+                        isSuccess: true
+                        })
+                }else{
+                    setAlert({
+                        message: response.message, 
+                        isSuccess: false
+                    })
+                }
+            }
+        )
+
+
+        // hide alert after 2 seconds 
+        setTimeout(() => {
+            toggleAlert(false);
+            navigate('/log-in');
+        }, 2000)
+
+    }
     
     return (
         <div>
             <Navbar />
+
+            {
+                <div className = 'mt-2'>
+                    {showAlert && <Alert message = {alertData.message} isSuccess = {alertData.isSuccess}/>}
+                </div>
+            }
 
             <h1 className = 'text-center display-4 mt-5'>
                 Confirm Email
@@ -27,15 +82,17 @@ function EmailConfirmationPage() {
                     </div>
 
                     <div>
-                        <button className = 'btn btn-primary btn-lg mt-5'>
-                            Submit
+                        <button type = 'button' 
+                            className = 'btn btn-dark btn-lg mt-3' 
+                            style = {{width: '50vw'}}
+                            onClick = {confirmEmail}>
+                                Confirm Email
                         </button>
-
                     </div>
                 </div>
             </form>
 
-
+            {isLoading && <LoadingIndicator />}
         </div>
     );
 }

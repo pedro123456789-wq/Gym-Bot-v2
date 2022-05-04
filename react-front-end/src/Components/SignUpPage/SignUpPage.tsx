@@ -3,12 +3,13 @@ import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import RequestHandler from "../RequestHandler/RequestHandler";
 import LoadingIndicator from "../LoadingIndicator/LoadingIndicator";
-import Alert from "../Alert/Alert";
+import Alert, {alertProps} from '../Alert/Alert';
+
 
 
 function SignUpPage() {
     // store user inputs
-    const [userName, setUsername] = useState<string>();
+    const [userName, setUsername] = useState<string>('');
     const [email, setEmail] = useState<string>();
     const [password, setPassword] = useState<string>();
     const [passwordConfirmation, setPasswordConfirmation] = useState<string>();
@@ -16,8 +17,7 @@ function SignUpPage() {
     // handle loading icon and alerts
     const [isLoading, toggleLoad] = useState<boolean>(false);
     const [showAlert, toggleAlert] = useState<boolean>(false);
-    const [alertMessage, setMessage] = useState<string>('');
-    const [isSuccess, toggleSuccess] = useState<boolean>(false);
+    const [alertData, setAlert] = useState<alertProps>({message: '', isSuccess: false});
 
     // react navigation
     const navigate = useNavigate();
@@ -28,8 +28,7 @@ function SignUpPage() {
         // check if password confirmation  matches password 
         if (passwordConfirmation !== password){
             toggleAlert(true);
-            setMessage('The two passwords do not match');
-            toggleSuccess(false);
+            setAlert({message: 'The two passwords do not match', isSuccess: false})
 
             // hide alert in 1 seconds
             setTimeout(() => toggleAlert(false), 1000);
@@ -38,20 +37,28 @@ function SignUpPage() {
 
         toggleLoad(true);
 
-        RequestHandler.Post('sign-up', {'username' : userName, 'password' : password, 'email' : email}).then(
+        RequestHandler.sendRequest('POST', 
+                                  'sign-up', 
+                                  {'username' : userName, 
+                                  'password' : password, 
+                                  'email' : email}
+        ).then(
             (response) => {
                 toggleLoad(false);
                 toggleAlert(true);
-                setMessage(response.message);
-                toggleSuccess(response.success);
-
+                setAlert({message: response.message, isSuccess: response.success})
 
                 //hide alert after 1 second
                 setTimeout(() => {
                     toggleAlert(false)
                     
                     // redirect user to email confirmation page once account is created
-                    response.success && navigate('/confirm-email');
+                    if (response.success){
+                        navigate('/confirm-email');
+
+                        // store username in localStorage
+                        window.localStorage.setItem('username', userName);
+                    }
                 }, 1000);
             }
         )
@@ -74,7 +81,7 @@ function SignUpPage() {
                 }
 
                 {showAlert && 
-                    <Alert message = {alertMessage} isSuccess = {isSuccess} /> 
+                    <Alert message = {alertData.message} isSuccess = {alertData.isSuccess} /> 
                 }
 
                 <form>
