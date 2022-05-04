@@ -1,4 +1,4 @@
-type alertProps = {
+export type alertProps = {
     message: string, 
     isSuccess: boolean
 }
