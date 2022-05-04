@@ -2,9 +2,9 @@ import {apiUrl} from '../GlobalVariables';
 
 
 class RequestHandler{
-    static async Post(url : string, payload: {[header: string] : any}): Promise<any>{
+    static async sendRequest(method: string, url : string, payload: {[header: string] : any}): Promise<any>{
        let response = await fetch(`${apiUrl}${url}`, {
-           method: 'POST', 
+           method: method, 
            body: JSON.stringify(payload), 
            headers: {'Content-Type' : 'application/json'}, 
            credentials: 'include'
