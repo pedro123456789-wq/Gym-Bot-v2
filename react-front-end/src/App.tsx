@@ -4,12 +4,13 @@ import {
   Routes,
   Outlet
 } from "react-router-dom";
+import DashBoard from "./Components/DashBoardPage/DashBoard";
 import EmailConfirmationPage from "./Components/EmailConfirmationPage/EmailConfirmationPage";
 import FeaturesPage from "./Components/FeaturesPage/FeaturesPage";
 import LandingPage from './Components/LandingPage/LandingPage';
 import LoginPage from "./Components/LoginPage/LoginPage";
 import SignUpPage from "./Components/SignUpPage/SignUpPage";
-
+import ProfilePage from "./Components/ProfilePage/ProfilePage";
 
 function App(): JSX.Element {
   return (
@@ -21,6 +22,8 @@ function App(): JSX.Element {
           <Route path = '/sign-up' element = {<SignUpPage />} />
           <Route path = '/features' element = {<FeaturesPage />} />
           <Route path = '/confirm-email' element = {<EmailConfirmationPage />} />
+          <Route path = '/dashboard' element = {<DashBoard />} />
+          <Route path = '/profile' element = {<ProfilePage />} />
         </Routes>
       </div>
     </BrowserRouter>
