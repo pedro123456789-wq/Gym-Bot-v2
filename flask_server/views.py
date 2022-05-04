@@ -1,15 +1,18 @@
 #local imports
 from flask_server import app, db
-from flask_server.models import User
+from flask_server.models import User, Food, food_record
 from flask_server import encryptionHandler
 from flask_server import validationSchemes
 from flask_server.responses import customResponse
 from flask_server.emailSender import sendEmail
+from flask_server.sessionValidation import loginRequired, profileRequired
 
 #package imports 
 from jsonschema import validate, exceptions
-from flask import request, jsonify, make_response
+from flask import request
 from random import randint
+import jwt
+from datetime import datetime, timedelta
 
 
 
@@ -17,6 +20,7 @@ from random import randint
 @app.route('/api', methods = ['GET'])
 def home():
     return 'Api is running ...'
+
 
 
 
@@ -52,28 +56,29 @@ def signUp():
                     confirmationCode = confirmationCode
                   )
 
-
     #save new user in database
     db.session.add(newUser)
     db.session.commit()
-
 
     #send email to user with confirmation code
     try:
         sendEmail(
             email, 
             'Gym Bot verification code', 
-            f'Thank you for signing up.\nYour verification code is {confirmationCode}'
+            '\n'.join(['Thank you for signing up', 
+                       f'Your verification code is: {confirmationCode}', 
+                       f'Verify your email at: {app.config["URL"]}/verify-email'
+                    ])
         )
     except Exception:
         print('Internal server failure')
-
 
     return customResponse(True, 'Account created')
 
 
 
-@app.route('/api/cofirm-email', methods = ['PUT'])
+
+@app.route('/api/confirm-email', methods = ['PUT'])
 def confirmEmail():
     data = request.get_json()
 
@@ -103,19 +108,218 @@ def confirmEmail():
         return customResponse(True, 'Account was verified successfully')
 
     else:
-        return customResponse(False, 'Incorred verification code')
+        return customResponse(False, 'Incorrect verification code')
+
+
+
+
+@app.route('/api/log-in', methods = ['POST'])
+def log_in():
+    data = request.get_json()
+
+    try:
+        validate(instance = data, schema = validationSchemes.loginSchema)
+    except exceptions.ValidationError as error:
+        return customResponse(False, error.message)
+
+    username, password = data.get('username'), data.get('password')
+    targetUser = User.query.filter_by(username = username).first()   
+
+    if targetUser:
+        targetPassword = targetUser.password
+
+        if not targetUser.emailConfirmed:
+            return customResponse(False, 'We sent you a verification code. Please check your email')
+
+        if encryptionHandler.check_password_hash(targetPassword, password):
+            token = jwt.encode({'user' : username, 'exp' : datetime.utcnow() + timedelta(minutes = 60)}, app.config['SECRET_KEY']).decode('utf-8')            
+            return customResponse(True, 'Login successful', token = str(token))
+        else:
+            return customResponse(False, 'Incorrect password')
+    
+    else:
+        return customResponse(False, 'Account does not exist')
+
+
+
+
+@app.route('/api/check-session', methods = ['POST'])
+@loginRequired(methods = ['POST'])
+@profileRequired(methods = ['POST'])
+def checkSession():
+    data = request.get_json()
+    username = data.get('username')
+
+    return customResponse(True, f'Session is valid for {username}')
+
+
+
+
+#need to check if user already has profile
+#display pop up for errors
+#make error messages and labels more user friendly
+@app.route('/api/profile', methods = ['GET', 'POST', 'PUT'])
+@loginRequired()
+@profileRequired(['GET', 'PUT'])
+def profile():
+    headerBounds = validationSchemes.profileBounds
+    data = request.get_json()
+    username = data.get('username')
+    targetUser = User.query.filter_by(username = username).first()
+
+    #get profile data 
+    if request.method == 'GET':
+        output = {field : eval(f'targetUser.{field}') 
+                  for field in validationSchemes.profileSchema['required']}
+
+        return customResponse(True, 'Fetched Data Successfully', data = output)
+
+
+    #create profile by adding values to all null fields
+    elif request.method == 'POST':
+        #check if all required headers are present 
+        try:
+            validate(instance = data, schema = validationSchemes.profileSchema)
+        except exceptions.ValidationError as error:
+            return customResponse(False, error.message)
+
+        #check if all values are within bounds
+        for header in list(headerBounds):
+            if data[header] > headerBounds[header]['max'] or data[header] < headerBounds[header]['min']:
+                return customResponse(False, f'Value for {header} is not valid')
+
+        #update user table with new values 
+        for header in list(data.keys()):
+            if header != 'username' and header != 'token': 
+                exec(f'targetUser.{header} = {data[header]}')
+
+        #save changes
+        db.session.commit()
+        return customResponse(True, 'Profile created')
+
+
+    #update profile data
+    elif request.method == 'PUT':       
+        #check if all new values are in bounds
+        for header in list(data.keys()):
+            if data[header] > headerBounds[header]['max'] or data[header] < headerBounds[header]['min']:
+                return customResponse(False, f'Value for {header} is not valid')
+
+        #only set new values if all values provided are valid
+        #this has impact on performance but ensures that transactions are atomic
+        for header in list(data.keys()):
+            if header != 'username' and header != 'token':
+                exec(f'targetUser.{header} = {data[header]}')
+
+        return customResponse(True, 'Data Updated')
+
+
+
+
+@app.route('/api/food', methods = ['POST', 'GET'])
+@loginRequired(methods = ['POST', 'GET'])
+@profileRequired(methods = ['POST', 'GET'])
+def food():
+    data = request.get_json()
+    username = data.get('username')
+    targetUser = User.query.filter_by(username = username).first()
+
+    if request.method == 'GET':
+        startDate = data.get('startDate')
+        endDate = data.get('endDate')
+
+        #convert start and end date of db query into timestamps
+        try:
+            dateFormat = '%d/%m/%Y'
+            startTs, endTs = datetime.strptime(startDate, dateFormat), datetime.strptime(endDate, dateFormat)
+        except Exception:
+            return customResponse(False, 'Invalid date format')
+
+
+        #query food_record table (junction table) to find entries which have the user id of target user and have timestamp between start and end ts
+        foodRecordQuery = db.session.query(food_record).filter((food_record.c.user_id == targetUser.id) &
+                                                               (food_record.c.timestamp <= endTs) &
+                                                               (food_record.c.timestamp >= startTs)).all()
+
+        #get ids from the items returned in the query
+        foodIds = [field.food_id for field in foodRecordQuery]
+
+        #return list of foods with ids in foodIds
+        foodItems = [{'name' : item.name,
+                      'calories' : item.calories, 
+                      'fat' : item.fat,
+                      'carboHydrates' : item.carboHydrates, 
+                      'protein' : item.protein
+                      } for item in Food.query.all() if item.id in foodIds]
+
+        return customResponse(True, 'Got Data', data = foodItems)
+                                
+
+    elif request.method == 'POST':
+        #check if headers are valid
+        try:
+            validate(instance = data, schema = validationSchemes.foodSchema)
+        except exceptions.ValidationError as error:
+            return customResponse(False, error.message)
+
+        foodName, calories, fat, carboHydrates, protein = data.get('foodName'), data.get('calories'), data.get('fat'), data.get('carboHydrates'), data.get('protein')
+        
+        #check if food item already exists
+        itemMatches = Food.query.filter_by(name = foodName,
+                                           calories = calories, 
+                                           fat = fat, 
+                                           carboHydrates = carboHydrates, 
+                                           protein = protein
+                                          ).all()
+
+        if len(itemMatches) > 0:
+            item = itemMatches[0]
+        else:
+            item = Food(name = foodName,
+                        calories = calories, 
+                        fat = fat,
+                        carboHydrates = carboHydrates, 
+                        protein = protein
+                       )
+            
+            db.session.add(item)
+            db.session.flush()
+
+        
+        #add entry to junction table between user and food item with corresponding primary keys
+        insertionStatement = food_record.insert().values(user_id = targetUser.id, food_id = item.id)
+        db.session.execute(insertionStatement)
+        db.session.commit()
+
+        return customResponse(True, 'New food record added to database')
     
 
+    elif request.method == 'PUT':
+        #delete or edit records
+        pass
 
 
-    
 
-    
 
-    
+@app.route('/api/workouts', methods = ['GET', 'POST', 'PUT'])
+@loginRequired(methods = ['GET', 'POST', 'PUT'])
+@profileRequired(methods = ['GET', 'POST', 'PUT'])
+def workouts():
+    if request.method == 'GET':
+        pass
 
-    
-    
+    elif request.method == 'POST':
+        pass 
 
-    
 
+    elif request.method == 'GET':
+        pass
+
+
+
+
+@app.route('/api/body-fat', methods = ['GET'])
+@loginRequired(methods = ['GET'])
+@profileRequired(methods = ['GET'])
+def bodyFat():
+    pass
