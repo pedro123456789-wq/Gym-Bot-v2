@@ -57,6 +57,10 @@ code {
 
 
 /* page styles */
+button:focus{
+  outline: none;
+}
+
 .main-video{
   position: absolute;
   top: 0;
@@ -79,6 +83,49 @@ code {
 
 .navbar{
   background: rgb(2, 38, 105);
+}
+
+.login-required-image{
+  position: relative;
+  max-width: 20rem;
+}
+
+.small-button{
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+}
+
+.section-div{
+  width: 50vw;
+  background: gray;
+  border-width: 0.1rem;
+  border-color: white;
+  border-radius: 0.5rem;
+}
+
+.progress-bar{
+  height: 10rem;
+  width: 1rem;
+  background: white;
+  border-color: transparent;
+  border-radius: 1rem;
+  border-style: solid;
+  margin: auto;
+}
+
+.progress-indicator{
+  width: 100%;
+  display: block;
+  background: yellow;
+  width: 100%;
+  bottom: 0;
+  height: 100%;
+  border-color: transparent;
+  border-radius: 1rem;
+  border-style: solid;
+
+  
 }
 
 
