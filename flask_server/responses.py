@@ -1,11 +1,11 @@
 from flask import make_response, jsonify
 
 
-def customResponse(success: bool, message: str, errorCode: int = 400, **others):
+def customResponse(success: bool, message: str, errorCode: int = 400, **extraHeaders):
     new_response = make_response(jsonify({
         'success' : success, 
         'message' : message,
-        **others
+        **extraHeaders
     }))
 
     new_response.status_code = 200 if success else errorCode
