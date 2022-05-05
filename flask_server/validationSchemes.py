@@ -109,6 +109,7 @@ profileSchema = {
             'type' : 'number'
         }
     }, 
+
     'required' : ['height', 'weight', 'vo2Max', 'age', 'gender', 'caloriesEatenTarget', 
                   'caloriesBurnedTarget', 'minutesTrainedTarget', 'distanceRanTarget']
 }
@@ -191,8 +192,37 @@ foodSchema = {
         'protein' : {
             'type' : 'number'
         }
-    }
+    }, 
+
+    'required' : ['foodName', 'calories', 'fat', 'carboHydrates', 'protein']
 }
+
+
+
+
+
+'''api/body-fat-prediction'''
+bodyFatPredictionSchema = {
+    'type' : 'object', 
+    'properties' : {
+        'weight' : {
+            'type' : 'number'
+        }, 
+
+        'chest' : {
+            'type' : 'number'
+        }, 
+
+        'abdomen' : {
+            'type' : 'number'
+        },
+
+        'hip' : {
+            'type' : 'number'
+        }
+    }, 
+    'required' : ['weight', 'chest', 'abdomen', 'hip'] 
+} 
 
 
 

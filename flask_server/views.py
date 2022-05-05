@@ -1,7 +1,7 @@
 #local imports
 from flask_server import app, db
 from flask_server.models import User, Food, food_record
-from flask_server import encryptionHandler
+from flask_server import encryptionHandler, bodyFatPredictor, bodyFatScalerY, bodyFatScalerX
 from flask_server import validationSchemes
 from flask_server.responses import customResponse
 from flask_server.emailSender import sendEmail
@@ -13,6 +13,7 @@ from flask import request
 from random import randint
 import jwt
 from datetime import datetime, timedelta
+import numpy as np
 
 
 
@@ -317,9 +318,32 @@ def workouts():
 
 
 
-
-@app.route('/api/body-fat', methods = ['GET'])
+#TODO: Fix scaling of x values
+@app.route('/api/body-fat-prediction', methods = ['GET'])
 @loginRequired(methods = ['GET'])
 @profileRequired(methods = ['GET'])
 def bodyFat():
-    pass
+    data = request.get_json()
+
+    #check if all required headers are present
+    try:
+        validate(instance = data, schema = validationSchemes.bodyFatPredictionSchema)
+    except exceptions.ValidationError as error:
+        return customResponse(False, error.message)
+
+    #check if all headers have valid values
+    for header in list(data.keys()):
+        if header != 'token' and header != 'username':
+            if float(data[header]) < 0 or float(data[header]) > 1000:
+                return customResponse(f'The value for {header} is invalid', False)
+
+    
+    #scale inputs
+    X = np.array(list(map(float, [data.get('weight'), data.get('chest'), data.get('abdomen'), data.get('hip')])))
+    X = bodyFatScalerX.transformData(X)
+    X = X.reshape(1, 1, 4)
+
+    prediction = bodyFatPredictor.predict(X)
+    rediction = bodyFatScalerY.inverseTransform(prediction)
+
+    return customResponse(True, 'Successful prediction', prediction = prediction)
