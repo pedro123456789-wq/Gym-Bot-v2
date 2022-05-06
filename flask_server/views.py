@@ -1,6 +1,6 @@
 #local imports
 from flask_server import app, db
-from flask_server.models import User, Food, food_record
+from flask_server.models import User, Food, Workout, Exercise, food_record, workout_exercise
 from flask_server import encryptionHandler, bodyFatPredictor, bodyFatScalerY, bodyFatScalerX
 from flask_server import validationSchemes
 from flask_server.responses import customResponse
@@ -306,19 +306,87 @@ def food():
 @loginRequired(methods = ['GET', 'POST', 'PUT'])
 @profileRequired(methods = ['GET', 'POST', 'PUT'])
 def workouts():
+    data = request.get_json()
+    username = data.get('username')
+    targetUser = User.query.filter_by(username = username).first()
+
     if request.method == 'GET':
         pass
 
     elif request.method == 'POST':
-        pass 
+        '''Create new workout'''
+
+        #check if request has valid headers
+        try:
+            validate(instance = data, schema = validationSchemes.workoutsSchema)
+        except exceptions.ValidationError as error:
+            return customResponse(False, error.message)
+
+        #create new entry in workout table
+        newWorkout = Workout(name = data.get('name'))
+        db.session.add(newWorkout)
+        db.session.flush()
+        
+        #link new entry to target user using foreign key
+        targetUser.workouts.append(newWorkout)
+        db.session.commit()
+        
+
+    elif request.method == 'PUT':
+        '''Modify or delete workouts'''
+
+        #append exercises to an workout
+        exerciseList, workoutName, action = data.get('exercises'), data.get('workoutName'), data.get('action')
+        
+        #check if all headers are present
+        if not exerciseList or not workoutName or not action:
+            return customResponse(False, 'Missing required headers')
+
+        #validate each exercise in the exercise list 
+        for exercise in exerciseList:
+            try:
+                validate(instance = exercise, schema = validationSchemes.exerciseSchema)
+            except exceptions.ValidationError as error:
+                return customResponse(False, error.message)
+
+        #check if workout exists
+        targetWorkout = Workout.query.filter_by(name = workoutName).first()
+
+        if not targetWorkout:
+            return customResponse(False, 'Workout does not exist')
 
 
-    elif request.method == 'GET':
-        pass
+        if action == 'ADD EXERCISES':
+            #either add all exercises or do not add any, hence the use of two loops is permited
+            for exercise in exerciseList:
+                name, duration, repetitions = exercise.get('name'), exercise.get('durationSeconds'), repetitions = exercise.get('repetitions')
+
+                newExercise = Exercise(name = name, 
+                                    durationSeconds = duration, 
+                                    repetitions = repetitions)
+                
+                #add new entry to exercise table
+                db.session.add(newExercise)
+                db.session.flush()
+
+                #add new entry to junction table for workout and exercises
+                insertionStatement = workout_exercise.insert().values(workout_id = targetWorkout.id, exercise_id = newExercise.id)
+                db.session.execute(insertionStatement)
+            
+            #commit changes
+            db.session.commit()
+        
+
+        elif action == 'REMOVE WORKOUT':
+            pass
+
+
+        elif action == 'REMOVE EXERCISE':
+            pass
 
 
 
-#TODO: Fix scaling of x values
+
 @app.route('/api/body-fat-prediction', methods = ['GET'])
 @loginRequired(methods = ['GET'])
 @profileRequired(methods = ['GET'])
@@ -343,6 +411,7 @@ def bodyFat():
     X = bodyFatScalerX.transformData(X)
     X = X.reshape(1, 1, 4)
 
+    #use neural network to make predictions
     prediction = bodyFatPredictor.predict(X)
     rediction = bodyFatScalerY.inverseTransform(prediction)
 
