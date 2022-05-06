@@ -85,7 +85,7 @@ class Workout(db.Model):
     __tablename__ = 'workout'
 
     id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.Text, nullable = False, unique = False)
+    name = db.Column(db.Text, nullable = False, unique = True) #make workout name unique
     
     #Exercise - many-to-many relationship
     exercises = db.relationship('Exercise', secondary = workout_exercise, backref = 'exercise')
