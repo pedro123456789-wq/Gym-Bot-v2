@@ -311,7 +311,19 @@ def workouts():
     targetUser = User.query.filter_by(username = username).first()
 
     if request.method == 'GET':
-        pass
+        workouts = Workout.query.filter_by(user_id = targetUser.id).all()
+        output = []
+
+        for workout in workouts:
+            exercises = []
+            pass
+
+            #iterate through the exercises in each workout and add them to exercises
+
+
+        
+
+
 
     elif request.method == 'POST':
         '''Create new workout'''
@@ -383,6 +395,7 @@ def workouts():
 
         elif action == 'REMOVE EXERCISE':
             pass
+
 
 
 
