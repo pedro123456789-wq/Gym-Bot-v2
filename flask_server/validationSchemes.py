@@ -227,6 +227,42 @@ bodyFatPredictionSchema = {
 
 
 
+'''api/workouts  => POST'''
+workoutsSchema = {
+    'type' : 'object', 
+    'properties' : {
+        'name' : {
+            'type' : 'string', 
+            'minLength' : 1, 
+            'maxLength' : 30
+        }
+    }, 
+    'required' : ['name']
+}
+
+
+
+
+exerciseSchema = {
+    'type' : 'object', 
+    'properties' : {
+        'name' : {
+            'type' : 'string',
+            'minLength' : 1, 
+            'maxLength' : 30
+        }, 
+        'durationSeconds' : {
+            'type' : 'number'
+        }, 
+        'repetitions' : {
+            'type' : 'number'
+        }
+    }
+}
+
+
+
+
 '''@loginRequired'''
 sessionValidationSchema = {
     'type' : 'object', 
