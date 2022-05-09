@@ -12,6 +12,9 @@ import LoginPage from "./Components/LoginPage/LoginPage";
 import SignUpPage from "./Components/SignUpPage/SignUpPage";
 import ProfilePage from "./Components/ProfilePage/ProfilePage";
 
+// install react ui kit: https://www.npmjs.com/package/material-kit-react
+
+
 function App(): JSX.Element {
   return (
     <BrowserRouter>
