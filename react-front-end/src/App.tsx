@@ -12,6 +12,8 @@ import LoginPage from "./Components/LoginPage/LoginPage";
 import SignUpPage from "./Components/SignUpPage/SignUpPage";
 import ProfilePage from "./Components/ProfilePage/ProfilePage";
 
+
+// Follow for design: https://demos.creative-tim.com/black-dashboard/examples/dashboard.html
 function App(): JSX.Element {
   return (
     <BrowserRouter>

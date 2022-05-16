@@ -1,27 +1,37 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import AppBar from '@material-ui/core/AppBar';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Drawer from '@material-ui/core/Drawer';
-import Hidden from '@material-ui/core/Hidden';
-import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
+import classNames from 'classnames';
+import {
+  AppBar, 
+  CssBaseline, 
+  Drawer, 
+  Hidden, 
+  IconButton, 
+  List, 
+  ListItem, 
+  ListItemText, 
+  ListItemIcon, 
+  Toolbar, 
+  makeStyles, 
+  useTheme,
+  Typography
+} from '@material-ui/core';
+
+import {
+  Dashboard, 
+  FitnessCenter, 
+  Event, 
+  TrackChanges, 
+  AccountCircle 
+} from '@material-ui/icons';
+
 import MenuIcon from '@material-ui/icons/Menu';
 import CloseIcon from '@material-ui/icons/Close';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { Link } from 'react-router-dom';
 
-
-// https://medium.com/@tsubasakondo_36683/create-responsive-drawer-menu-with-react-material-ui-617a42764b69
-
-const drawerWidth = 240;
+// move styles to separate file
+const drawerWidth = 80;
 const useStyles = makeStyles(theme => ({
-  root: {
-    display: 'flex',
-  },
   drawer: {
     [theme.breakpoints.up('sm')]: {
       width: drawerWidth,
@@ -29,122 +39,142 @@ const useStyles = makeStyles(theme => ({
     },
   },
   appBar: {
-    zIndex: theme.zIndex.drawer + 1,
+    zIndex: theme.zIndex.drawer + 3,
+    background: 'white',
   },
   menuButton: {
     marginRight: theme.spacing(2),
     [theme.breakpoints.up('sm')]: {
       display: 'none',
     },
+    color: '#022669'
   },
   toolbar: theme.mixins.toolbar,
   drawerPaper: {
-    width: drawerWidth
-  },
-  content: {
-    flexGrow: 1,
-    padding: theme.spacing(3),
+    width: drawerWidth,
+    background: '#022669' 
   },
   closeMenuButton: {
     marginRight: 'auto',
-    marginLeft: 0,
+    marginLeft: '14px',
+    color: 'white'
   },
+  iconLink: {
+    color: 'white', 
+    paddingLeft: '10px', 
+    fontSize: '2rem'
+  },
+  selectedIcon: {
+    color: 'purple'
+  }
 }));
 
 
+const paths = [
+  {'dir' : '/dashboard',
+   'icon' : <Dashboard />, 
+   'name' : 'Dashboard'}, 
+  {'dir' : '/saved-workouts',
+   'icon' : <FitnessCenter />, 
+    'name' : 'Saved Workouts'},
+  {'dir' : '/progress',
+    'icon' : <Event />, 
+    'name' : 'Progress'}, 
+  {'dir' : '/targets',
+   'icon' : <TrackChanges />, 
+   'name' : 'Targets'}, 
+  {'dir' :  '/profile', 
+   'icon' : <AccountCircle />, 
+   'name' : 'Profile'}
+];
+
+
 function SideBar() {
-  const dummyCategories = ['Hokusai', 'Hiroshige', 'Utamaro', 'Kuniyoshi', 'Yoshitoshi']
   const classes = useStyles();
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
-
-function handleDrawerToggle() {
-    setMobileOpen(!mobileOpen)
-}
-
-
-const drawer = (
-    <div>
-      <List>
-        {dummyCategories.map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List>
-    </div>
-  );
-return (
-    <div className={classes.root}>
-      <CssBaseline />
-      <AppBar position="fixed" className={classes.appBar}>
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="Open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            className={classes.menuButton}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap>
-            Responsive drawer
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      
-      <nav className={classes.drawer}>
-        {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
-        <Hidden smUp implementation="css">
-          <Drawer
-            variant="temporary"
-            anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-            ModalProps={{
-              keepMounted: true, // Better open performance on mobile.
-            }}
-          >
-            <IconButton onClick={handleDrawerToggle} className={classes.closeMenuButton}>
-              <CloseIcon/>
-            </IconButton>
-            {drawer}
-          </Drawer>
-        </Hidden>
-<Hidden xsDown implementation="css">
-          <Drawer
-            className={classes.drawer}
-            variant="permanent"
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-          >
-            <div className={classes.toolbar} />
-            {drawer}
-          </Drawer>  
-        </Hidden>
-      </nav>
-
-      <div className = {classes.content}>
+  function handleDrawerToggle() {
+      setMobileOpen(!mobileOpen)
+  }
 
 
+  const drawer = (
+      <div>
+        <List>
+          {paths.map((path) => (
+            <ListItem button key = {path.dir}>
+              <ListItemIcon>
+                <Link to = {path.dir} className = {classNames(classes.iconLink, window.location.pathname == path.dir && classes.selectedIcon)}>
+                  {path.icon}
+                </Link>
+              </ListItemIcon>
+            </ListItem>
+          ))}
+        </List>
       </div>
-      {/* <div className={classes.content}>
-        <div className={classes.toolbar} />
-        <VisibleItemList />
-      </div> */}
-    </div>
+    );
+
+    return (
+        <>
+        <AppBar position="fixed" className={classes.appBar}>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="Open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              className={classes.menuButton}
+            >
+              <MenuIcon />
+            </IconButton>
+
+            <Typography variant="h6" noWrap style = {{color: '#022669'}}>
+              {paths.filter((element) => element.dir === window.location.pathname)[0].name}
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        
+        <nav className={classes.drawer}>
+          {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
+          <Hidden smUp implementation="css">
+            <Drawer
+              variant="temporary"
+              anchor={theme.direction === 'rtl' ? 'right' : 'left'}
+              open={mobileOpen}
+              onClose={handleDrawerToggle}
+              classes={{
+                paper: classes.drawerPaper,
+              }}
+              ModalProps={{
+                keepMounted: true, // Better open performance on mobile.
+              }}
+            >
+              <IconButton onClick={handleDrawerToggle} className={classes.closeMenuButton}>
+                <CloseIcon/>
+              </IconButton>
+              {drawer}
+            </Drawer>
+          </Hidden>
+          <Hidden xsDown implementation="css">
+            <Drawer
+              className={classes.drawer}
+              variant="permanent"
+              classes={{
+                paper: classes.drawerPaper,
+              }}
+            >
+              <div className={classes.toolbar} />
+              {drawer}
+            </Drawer>  
+          </Hidden>
+        </nav>
+      </>
   );
 }
 
 SideBar.propTypes = {
-  // Injected by the documentation to work in an iframe.
-  // You won't need it on your project.
   container: PropTypes.object,
 };
+
 export default SideBar;
