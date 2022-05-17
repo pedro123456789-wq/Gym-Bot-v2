@@ -1,14 +1,15 @@
 import SideBar from '../SideBar/SideBar';
+import { dashboardStyles } from './styles';
 import {
-  CssBaseline, 
-  makeStyles, 
+  CssBaseline,
+  makeStyles,
   useTheme,
-  Typography, 
-  Grid, 
-  LinearProgress, 
+  Typography,
+  Grid,
+  LinearProgress,
   OutlinedInput,
-  MenuItem, 
-  Button, 
+  MenuItem,
+  Button,
   CircularProgress
 } from '@material-ui/core';
 
@@ -16,8 +17,8 @@ import {
   Whatshot
 } from '@material-ui/icons';
 
-import {Chart as ChartJS, registerables } from 'chart.js';
-import {Line} from 'react-chartjs-2';
+import { Chart as ChartJS, registerables } from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
 
 ChartJS.register(...registerables)
@@ -40,103 +41,67 @@ const data = {
 
 
 const options = {
-    responsive: true,
-    maintainAspectRatio: true, 
-    title: {
-      display: false,
-    }, 
+  responsive: true,
+  maintainAspectRatio: true,
+  title: {
+    display: false,
+  },
 };
 
 
 
-
-// Chart.register(CategoryScale, Point);
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    display: 'flex',
-    background: 'black'
-  },
-  content: {
-    flexGrow: 1,
-    paddingTop: theme.spacing(10),
-    paddingLeft: theme.spacing(2),
-    background: 'white'
-  }, 
-  gridRoot: {
-    flexGrow: 1, 
-    overflowX: 'hidden'
-  }, 
-  dataGrid: {
-    background: '#022669', 
-    zIndex: 1, 
-    borderRadius: theme.spacing(1), 
-    margin: theme.spacing(3)
-  }, 
-  dataTitle: {
-    color: 'white', 
-    textAlign: 'center',
-    marginTop: theme.spacing(1)
-  }, 
-  dataIcon: {
-    color: 'white', 
-    fontSize: theme.spacing(5)
-  }
-}))
-
-
 function DashBoardPage() {
-  const classes = useStyles();
+  const classes = makeStyles(theme => (dashboardStyles));
   const theme = useTheme();
 
   return (
-    <div className = {classes.root}>
+    <div className={classes.root}>
       <CssBaseline />
 
       <div>
         <SideBar />
       </div>
 
-      <div className = {classes.content}>
-        <Typography variant = 'h5' color = 'textSecondary'>
+      <div className={classes.content}>
+        <Typography variant='h5' color='textSecondary'>
           Welcome back
         </Typography>
 
-        <Grid container spacing = {2} className = {classes.gridRoot}>
-          <Grid item xs = {12} sm = {3}>
-            <div className = {classes.dataGrid}>
-              <div style = {{display: 'flex', justifyContent: 'space-around'}}>
-                <h5 className = {classes.dataTitle}>Calories Burned</h5>
-                <Whatshot className = {classes.dataIcon}/>
+        <Grid container spacing={2} className={classes.gridRoot}>
+          <Grid item xs={12} sm={3}>
+            <div className={classes.dataGrid}>
+              <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                <h5 className={classes.dataTitle}>Calories Burned</h5>
+                <Whatshot className={classes.dataIcon} />
               </div>
 
-              <p className = 'text-center'>3000 / 4000</p>
+              <p className='text-center'>3000 / 4000</p>
             </div>
           </Grid>
 
-          <Grid item xs = {12} sm = {3}>
-            <div className = {classes.dataGrid}>
-              <div style = {{display: 'flex', justifyContent: 'space-around'}}>
-                <h5 className = {classes.dataTitle}>Minutes Trained</h5>
-                <Whatshot className = {classes.dataIcon}/>
-              </div>
-            </div>
-          </Grid>
-
-          <Grid item xs = {12} sm = {3}>
-            <div className = {classes.dataGrid}>
-              <div style = {{display: 'flex', justifyContent: 'space-around'}}>
-                <h5 className = {classes.dataTitle}>Distance Covered</h5>
-                <Whatshot className = {classes.dataIcon}/>
+          <Grid item xs={12} sm={3}>
+            <div className={classes.dataGrid}>
+              <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                <h5 className={classes.dataTitle}>Minutes Trained</h5>
+                <Whatshot className={classes.dataIcon} />
               </div>
             </div>
           </Grid>
 
-          <Grid item xs = {12} sm = {3}>
-            <div className = {classes.dataGrid}>
-              <div style = {{display: 'flex', justifyContent: 'space-around'}}>
-                  <h5 className = {classes.dataTitle}>Today's Workout</h5>
-                  <Whatshot className = {classes.dataIcon}/>
+          <Grid item xs={12} sm={3}>
+            <div className={classes.dataGrid}>
+              <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                <h5 className={classes.dataTitle}>Distance Covered</h5>
+                <Whatshot className={classes.dataIcon} />
+              </div>
+            </div>
+          </Grid>
+
+          <Grid item xs={12} sm={3}>
+            <div className={classes.dataGrid}>
+              <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                <h5 className={classes.dataTitle}>Today's Workout</h5>
+                <Whatshot className={classes.dataIcon} />
               </div>
             </div>
           </Grid>
