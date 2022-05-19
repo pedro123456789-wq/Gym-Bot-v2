@@ -1,20 +1,18 @@
 import SideBar from '../SideBar/SideBar';
-import { dashboardStyles } from './styles';
+import useStyles from './styles';
 import {
   CssBaseline,
-  makeStyles,
   useTheme,
   Typography,
   Grid,
-  LinearProgress,
-  OutlinedInput,
-  MenuItem,
-  Button,
-  CircularProgress
+  LinearProgress
 } from '@material-ui/core';
 
 import {
-  Whatshot
+  Whatshot, 
+  ShutterSpeed, 
+  DirectionsRun, 
+  RestaurantMenu
 } from '@material-ui/icons';
 
 import { Chart as ChartJS, registerables } from 'chart.js';
@@ -51,16 +49,13 @@ const options = {
 
 
 function DashBoardPage() {
-  const classes = makeStyles(theme => (dashboardStyles));
+  const classes = useStyles();
   const theme = useTheme();
 
   return (
     <div className={classes.root}>
       <CssBaseline />
-
-      <div>
-        <SideBar />
-      </div>
+      <SideBar />
 
       <div className={classes.content}>
         <Typography variant='h5' color='textSecondary'>
@@ -68,45 +63,77 @@ function DashBoardPage() {
         </Typography>
 
         <Grid container spacing={2} className={classes.gridRoot}>
-          <Grid item xs={12} sm={3}>
+          <Grid item xs = {12} sm = {6} md = {3}>
             <div className={classes.dataGrid}>
-              <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                <h5 className={classes.dataTitle}>Calories Burned</h5>
-                <Whatshot className={classes.dataIcon} />
+              <h5 className={classes.dataTitle}>Calories Burned</h5>
+              <Whatshot className={classes.dataIcon} style = {{color: 'red' }}/>
+              
+              <div>
+                <LinearProgress 
+                  classes = {{root: classes.progressBarRoot, bar: classes.progressBarTop}} 
+                  variant = "determinate"
+                  value = {80}
+                />
               </div>
 
-              <p className='text-center'>3000 / 4000</p>
+              <p className = {classes.progressLabel}>3000 / 4000</p>
             </div>
           </Grid>
 
-          <Grid item xs={12} sm={3}>
+
+          <Grid item xs = {12} sm = {6} md = {3}>
             <div className={classes.dataGrid}>
-              <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                <h5 className={classes.dataTitle}>Minutes Trained</h5>
-                <Whatshot className={classes.dataIcon} />
+              <h5 className={classes.dataTitle}>Minutes Trained</h5>
+              <ShutterSpeed className={classes.dataIcon} style = {{color: 'gray'}} />
+
+              <div>
+                <LinearProgress 
+                  classes = {{root: classes.progressBarRoot, bar: classes.progressBarTop}} 
+                  variant = "determinate"
+                  value = {60}
+                />
               </div>
+
+              <p className = {classes.progressLabel}>3000 / 4000</p>
             </div>
           </Grid>
 
-          <Grid item xs={12} sm={3}>
+
+          <Grid item xs = {12} sm = {6} md = {3}>
             <div className={classes.dataGrid}>
-              <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                <h5 className={classes.dataTitle}>Distance Covered</h5>
-                <Whatshot className={classes.dataIcon} />
+              <h5 className={classes.dataTitle}>Distance Covered</h5>
+              <DirectionsRun className={classes.dataIcon} style = {{color: '#2abedb'}}/>
+     
+              <div>
+                <LinearProgress 
+                  classes = {{root: classes.progressBarRoot, bar: classes.progressBarTop}} 
+                  variant = "determinate"
+                  value = {80}
+                />
               </div>
+
+              <p className = {classes.progressLabel}>3000 / 4000</p>
             </div>
           </Grid>
 
-          <Grid item xs={12} sm={3}>
+          <Grid item xs = {12} sm = {6} md = {3}>
             <div className={classes.dataGrid}>
-              <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-                <h5 className={classes.dataTitle}>Today's Workout</h5>
-                <Whatshot className={classes.dataIcon} />
+              <h5 className={classes.dataTitle}>Calories Eaten</h5>
+              <RestaurantMenu className={classes.dataIcon} style = {{color: '#1bf207'}}/>
+
+              <div>
+                <LinearProgress 
+                  classes = {{root: classes.progressBarRoot, bar: classes.progressBarTop}} 
+                  variant = "determinate"
+                  value = {80}
+                />
               </div>
+
+              <p className = {classes.progressLabel}>3000 / 4000</p>
             </div>
           </Grid>
 
-          {/* <Grid item xs = {12} sm = {6}>
+          <Grid item xs = {12} sm = {12} md = {6}>
             <p>
               Time trained
             </p>
@@ -115,7 +142,7 @@ function DashBoardPage() {
               data = {data}
               options = {options}
             />
-          </Grid> */}
+          </Grid>
         </Grid>
       </div>
     </div>

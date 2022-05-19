@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { sidebarStyles } from './styles';
+// import useStyles from './styles';
+
 import {
   AppBar,
   CssBaseline,
@@ -10,12 +11,11 @@ import {
   IconButton,
   List,
   ListItem,
-  ListItemText,
   ListItemIcon,
   Toolbar,
-  makeStyles,
   useTheme,
-  Typography
+  Typography, 
+  makeStyles
 } from '@material-ui/core';
 
 import {
@@ -29,7 +29,6 @@ import {
 import MenuIcon from '@material-ui/icons/Menu';
 import CloseIcon from '@material-ui/icons/Close';
 import { Link } from 'react-router-dom';
-
 
 
 const paths = [
@@ -61,8 +60,48 @@ const paths = [
 ];
 
 
+const useStyles = makeStyles(theme => ({
+  drawer: {
+      [theme.breakpoints.up('sm')]: {
+          width: 80,
+          flexShrink: 0,
+      },
+  },
+  appBar: {
+      zIndex: theme.zIndex.drawer + 3,
+      background: 'white',
+  },
+  menuButton: {
+      marginRight: theme.spacing(2),
+      [theme.breakpoints.up('sm')]: {
+          display: 'none',
+      },
+      color: '#022669'
+  },
+  toolbar: theme.mixins.toolbar,
+  drawerPaper: {
+      width: 80,
+      background: '#022669'
+  },
+  closeMenuButton: {
+      marginRight: 'auto',
+      marginLeft: '14px',
+      color: 'white'
+  },
+  iconLink: {
+      color: 'white',
+      paddingLeft: '10px',
+      fontSize: '2rem'
+  },
+  selectedIcon: {
+      color: 'purple'
+  }
+}));
+
+
+
 function SideBar() {
-  const classes = makeStyles(theme => (sidebarStyles));
+  const classes = useStyles();
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
@@ -90,6 +129,8 @@ function SideBar() {
   return (
     <>
       <AppBar position="fixed" className={classes.appBar}>
+        <CssBaseline />
+
         <Toolbar>
           <IconButton
             color="inherit"

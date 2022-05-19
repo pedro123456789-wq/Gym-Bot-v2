@@ -5,8 +5,9 @@ from datetime import datetime
 
 #juction table for Workout and Exercise
 workout_exercise = db.Table('workout_exercise', 
+    db.Column('workout_exercise_id', db.Integer, primary_key = True),
     db.Column('workout_id', db.Integer, db.ForeignKey('workout.id')),   
-    db.Column('exercise_id', db.Integer, db.ForeignKey('exercise.id'))
+    db.Column('exercise_id', db.Integer, db.ForeignKey('exercise.id')), 
 )
 
 

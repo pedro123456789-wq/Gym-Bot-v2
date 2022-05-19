@@ -1,4 +1,7 @@
-export const dashboardStyles = {
+import {makeStyles} from '@material-ui/core';
+
+
+export default makeStyles(theme => ({
     root: {
         display: 'flex',
         background: 'black'
@@ -17,7 +20,9 @@ export const dashboardStyles = {
         background: '#022669',
         zIndex: 1,
         borderRadius: theme.spacing(1),
-        margin: theme.spacing(3)
+        margin: theme.spacing(3), 
+        textAlign: 'center', 
+        padding: theme.spacing(1)
     },
     dataTitle: {
         color: 'white',
@@ -25,7 +30,22 @@ export const dashboardStyles = {
         marginTop: theme.spacing(1)
     },
     dataIcon: {
-        color: 'white',
-        fontSize: theme.spacing(5)
+        fontSize: theme.spacing(4), 
+        textAlign: 'center'
+    }, 
+    progressBarRoot: {
+        marginTop: theme.spacing(3),
+        marginBottom: theme.spacing(3),
+        height: theme.spacing(1), 
+        borderRadius: 5,
+        background: 'black'
+    }, 
+    progressBarTop: {
+        borderRadius: 5, 
+        background: `linear-gradient(90deg, #702dbd ${100 - 80}%, #e60b29 100%)`
+    }, 
+    progressLabel: {
+        color: 'white', 
+        fontSize: theme.spacing(2)
     }
-}
+}));

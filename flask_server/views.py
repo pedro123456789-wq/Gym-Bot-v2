@@ -301,7 +301,7 @@ def food():
 
 
 
-
+#TODO: Test endpoint
 @app.route('/api/workouts', methods = ['GET', 'POST', 'PUT'])
 @loginRequired(methods = ['GET', 'POST', 'PUT'])
 @profileRequired(methods = ['GET', 'POST', 'PUT'])
@@ -311,17 +311,40 @@ def workouts():
     targetUser = User.query.filter_by(username = username).first()
 
     if request.method == 'GET':
-        workouts = Workout.query.filter_by(user_id = targetUser.id).all()
-        output = []
+        targetWorkouts = data.get('targetWorkouts')
 
-        for workout in workouts:
-            exercises = []
-            pass
+        #check if targetWorkouts is valid
+        if not targetWorkouts:
+            return customResponse(False, 'Missing required headers')
 
-            #iterate through the exercises in each workout and add them to exercises
-
-
+        if type(targetWorkouts) != list:
+            return customResponse(False, 'Invalid format for workout list')
         
+        #fetch list of all workouts saved by target user
+        workouts = targetUser.workouts
+
+        if targetWorkouts == ['ALL']:
+            targetWorkouts = [workout.name for workout in workouts]
+
+        #iterate through all workouts
+        #for each workout append a dictionary with its names and its exercises
+        #for each exercise create dictionary with its field values
+        savedWorkouts = [
+                            {
+                            'name' : workout.name, 
+                            'exercises' : [
+                                            {field.name: str(getattr(exercise, field.name)) for field in exercise.__table__.columns} 
+                                            for exercise in workout.exercises
+                                          ]
+                            }
+                        
+                            for workout in workouts if workout.name in targetWorkouts
+                        ]
+
+        if len(savedWorkouts) > 0:
+            return customResponse(True, 'Fetched saved workouts successfully', workouts = savedWorkouts)
+        else:
+            return customResponse(False, 'There were no matching saved workouts')
 
 
 
@@ -334,6 +357,11 @@ def workouts():
         except exceptions.ValidationError as error:
             return customResponse(False, error.message)
 
+        #check if workout name is already in use
+        matchingNames = Workout.query.filter_by(name = data.get('name')).all()
+        if len(matchingNames) > 0:
+            return customResponse(False, 'You already have a workout with that name')
+
         #create new entry in workout table
         newWorkout = Workout(name = data.get('name'))
         db.session.add(newWorkout)
@@ -342,40 +370,57 @@ def workouts():
         #link new entry to target user using foreign key
         targetUser.workouts.append(newWorkout)
         db.session.commit()
+
+        return customResponse(True, 'Added new workout')
         
 
     elif request.method == 'PUT':
         '''Modify or delete workouts'''
-
-        #append exercises to an workout
-        exerciseList, workoutName, action = data.get('exercises'), data.get('workoutName'), data.get('action')
+        workoutName, action = data.get('workoutName'), data.get('action')
         
-        #check if all headers are present
-        if not exerciseList or not workoutName or not action:
+        #check if all required headers are present
+        if not workoutName or not action:
             return customResponse(False, 'Missing required headers')
-
-        #validate each exercise in the exercise list 
-        for exercise in exerciseList:
-            try:
-                validate(instance = exercise, schema = validationSchemes.exerciseSchema)
-            except exceptions.ValidationError as error:
-                return customResponse(False, error.message)
-
+        
         #check if workout exists
         targetWorkout = Workout.query.filter_by(name = workoutName).first()
-
         if not targetWorkout:
             return customResponse(False, 'Workout does not exist')
+
+        #validate exercise list for request that use it
+        if 'EXERCISES' in action:
+            exerciseList = data.get('exercises')
+            
+            #check if exercise list is valid
+            if type(exerciseList) != list:
+                return customResponse(False, 'Invalid exercise list')
+
+            if len(exerciseList) > 30:
+                return customResponse(False, 'Exceeded exercise limit')
+
+            #validate each exercise in the exercise list 
+            for exercise in exerciseList:
+                try:
+                    validate(instance = exercise, schema = validationSchemes.exerciseSchema)
+                except exceptions.ValidationError as error:
+                    return customResponse(False, error.message)
 
 
         if action == 'ADD EXERCISES':
             #either add all exercises or do not add any, hence the use of two loops is permited
             for exercise in exerciseList:
-                name, duration, repetitions = exercise.get('name'), exercise.get('durationSeconds'), repetitions = exercise.get('repetitions')
+                name, duration, repetitions = exercise.get('name'), exercise.get('durationSeconds'),  exercise.get('repetitions')
 
-                newExercise = Exercise(name = name, 
-                                    durationSeconds = duration, 
-                                    repetitions = repetitions)
+                #check if exercise already exists to save space in database
+                matchingExercise = Exercise.query.filter_by(name = name, durationSeconds = duration, repetitions = repetitions).first()
+
+                if matchingExercise:
+                    newExercise = matchingExercise
+                else:
+                    #if exercise does not exist create new exercise 
+                    newExercise = Exercise(name = name, 
+                                        durationSeconds = duration, 
+                                        repetitions = repetitions)
                 
                 #add new entry to exercise table
                 db.session.add(newExercise)
@@ -387,14 +432,25 @@ def workouts():
             
             #commit changes
             db.session.commit()
+            return customResponse(True, 'Exercises added successfully')
         
 
-        elif action == 'REMOVE WORKOUT':
-            pass
-
-
+        #remove entry from workout_exercise junction table
         elif action == 'REMOVE EXERCISE':
             pass
+
+        #delete exercise from exercise table after checking if referential integrity is perserved
+        elif action == 'DELETE EXERCISE':
+            pass
+
+        elif action == 'DELETE WORKOUT':
+            #delete workout from workout table
+            #delete all rows of junction table with workoutID of workout that was deleted
+            #SQL maintains referential intergity so only have to manually delete from workout table
+
+            db.session.delete(targetWorkout)
+            db.session.commit()
+            return customResponse(True, 'Deleted workout successfully')
 
 
 
@@ -418,14 +474,13 @@ def bodyFat():
             if float(data[header]) < 0 or float(data[header]) > 1000:
                 return customResponse(f'The value for {header} is invalid', False)
 
-    
     #scale inputs
-    X = np.array(list(map(float, [data.get('weight'), data.get('chest'), data.get('abdomen'), data.get('hip')])))
+    X = np.array([list(map(float, [data.get('weight'), data.get('chest'), data.get('abdomen'), data.get('hip')]))])
     X = bodyFatScalerX.transformData(X)
     X = X.reshape(1, 1, 4)
 
     #use neural network to make predictions
     prediction = bodyFatPredictor.predict(X)
-    rediction = bodyFatScalerY.inverseTransform(prediction)
+    prediction = round(bodyFatScalerY.inverseTransform(prediction)[0][0][0], 0)
 
-    return customResponse(True, 'Successful prediction', prediction = prediction)
+    return customResponse(True, 'Body Fat Prediction (%)', prediction = prediction)
