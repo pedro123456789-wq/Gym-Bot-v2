@@ -483,4 +483,40 @@ def bodyFat():
     prediction = bodyFatPredictor.predict(X)
     prediction = round(bodyFatScalerY.inverseTransform(prediction)[0][0][0], 0)
 
-    return customResponse(True, 'Body Fat Prediction (%)', prediction = prediction)
+    return customResponse(True, 'Successful prediction', prediction = prediction)
+
+
+
+
+@app.route('/api/daily-data', methods = ['GET'])
+@loginRequired(methods = ['GET'])
+@profileRequired(methods = ['GET'])
+def getDailyData():
+    data = request.get_json()
+    username = data.get('username')
+    targetDate = data.get('date')
+    targetUser = User.query.filter_by(username = username).first()
+
+    try:
+        dateFormat = '%d/%m/%Y'
+        targetDate = datetime.strptime(targetDate, dateFormat)
+    except Exception:
+        return customResponse(False, 'Invalid date format')
+
+    #get calories eaten in target date 
+    foodRecordQuery = db.session.query(food_record).filter((food_record.c.user_id == targetUser.id) &
+                                                           (food_record.c.timestamp.day == targetDate.day)).all()
+
+    foodIds = [field.food_id for field in foodRecordQuery]
+    calories = sum([int(item.calories) for item in Food.query.all() if item.id in foodIds])
+
+
+    # #get total time trained for target date
+    # workouts = Workout.query.filter_by(user_id = targetUser.id).all()
+    # totalDurationMinutes = sum([int(workout.durationSeconds) for workout in workouts]) / 60
+
+    return customResponse(True, 'Got data successfully', calories = calories)
+
+
+
+#use garmin connect to get garmin data from watch
