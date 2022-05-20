@@ -74,12 +74,13 @@ class Exercise(db.Model):
     __tablename__ = 'exercise'
 
     id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.Text, unique = False, nullable = False)
     durationSeconds = db.Column(db.Integer, unique = False, nullable = False)
     repetitions = db.Column(db.Integer, unique = False, nullable = False)
+    caloriesBurned = db.Column(db.Integer, unique = False, nullable = False)
+    exerciseType = db.Column(db.Text, unique = False, nullable = False)
 
 
-
+    
 
 class Workout(db.Model):
     __tablename__ = 'workout'
@@ -90,3 +91,4 @@ class Workout(db.Model):
     #Exercise - many-to-many relationship
     exercises = db.relationship('Exercise', secondary = workout_exercise, backref = 'exercise')
     userId = db.Column(db.Integer, db.ForeignKey('user.id'))
+

@@ -435,15 +435,13 @@ def getDailyData():
     data = requests.get_json()
     username = data.get('username')
     targetDate = data.get('date')
+    targetUser = User.query.filter_by(username = username).first()
 
     try:
         dateFormat = '%d/%m/%Y'
         targetDate = datetime.strptime(startDate, dateFormat)
     except Exception:
         return customResponse(False, 'Invalid date format')
-
-    
-    targetUser = User.query.filter_by(username = username).first()
 
     #get calories eaten in target date 
     foodRecordQuery = db.session.query(food_record).filter((food_record.c.user_id == targetUser.id) &
@@ -458,3 +456,7 @@ def getDailyData():
     totalDurationMinutes = sum([int(workout.durationSeconds) for workout in workouts]) / 60
 
     return customResponse(True, 'Got data successfully', calories = calories, timeTrained = totalDurationMinutes)
+
+
+
+#use garmin connect to get garmin data from watch
