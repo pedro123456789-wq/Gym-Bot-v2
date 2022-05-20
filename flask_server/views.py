@@ -320,11 +320,6 @@ def workouts():
 
             #iterate through the exercises in each workout and add them to exercises
 
-
-        
-
-
-
     elif request.method == 'POST':
         '''Create new workout'''
 
@@ -429,3 +424,37 @@ def bodyFat():
     rediction = bodyFatScalerY.inverseTransform(prediction)
 
     return customResponse(True, 'Successful prediction', prediction = prediction)
+
+
+
+
+@app.route('/api/daily-data', methods = ['GET'])
+@loginRequired(methods = ['GET'])
+@profileRequired(methods = ['GET'])
+def getDailyData():
+    data = requests.get_json()
+    username = data.get('username')
+    targetDate = data.get('date')
+
+    try:
+        dateFormat = '%d/%m/%Y'
+        targetDate = datetime.strptime(startDate, dateFormat)
+    except Exception:
+        return customResponse(False, 'Invalid date format')
+
+    
+    targetUser = User.query.filter_by(username = username).first()
+
+    #get calories eaten in target date 
+    foodRecordQuery = db.session.query(food_record).filter((food_record.c.user_id == targetUser.id) &
+                                                           (food_record.c.timestamp.day == targetDate.day)).all()
+
+    foodIds = [field.food_id for field in foodRecordQuery]
+    calories = sum([int(item.calories), for item in Food.query.all() if item.id in foodIds])
+
+
+    #get total time trained for target date
+    workouts = Workout.query.filter_by(user_id = targetUser.id).all()
+    totalDurationMinutes = sum([int(workout.durationSeconds) for workout in workouts]) / 60
+
+    return customResponse(True, 'Got data successfully', calories = calories, timeTrained = totalDurationMinutes)
