@@ -5,11 +5,18 @@ from datetime import datetime
 
 #juction table for Workout and Exercise
 workout_exercise = db.Table('workout_exercise', 
+    db.Column('id', db.Integer, primary_key = True), 
     db.Column('workout_id', db.Integer, db.ForeignKey('workout.id')),   
     db.Column('exercise_id', db.Integer, db.ForeignKey('exercise.id'))
 )
 
 
+#table to store workouts that user has done
+workout_record = db.Table('workout_record', 
+    db.Column('record_id', db.Integer, primary_key = True),  
+    db.Column('workout_id', db.Integer, db.ForeignKey('workout.id'), 
+    db.Column('timestamp', db.DateTime, default = datetime.utcnow)
+)
 
 
 #juction table for User and Food
@@ -91,4 +98,5 @@ class Workout(db.Model):
     #Exercise - many-to-many relationship
     exercises = db.relationship('Exercise', secondary = workout_exercise, backref = 'exercise')
     userId = db.Column(db.Integer, db.ForeignKey('user.id'))
+
 
