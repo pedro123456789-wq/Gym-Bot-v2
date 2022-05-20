@@ -451,11 +451,11 @@ def getDailyData():
     calories = sum([int(item.calories), for item in Food.query.all() if item.id in foodIds])
 
 
-    #get total time trained for target date
-    workouts = Workout.query.filter_by(user_id = targetUser.id).all()
-    totalDurationMinutes = sum([int(workout.durationSeconds) for workout in workouts]) / 60
+    # #get total time trained for target date
+    # workouts = Workout.query.filter_by(user_id = targetUser.id).all()
+    # totalDurationMinutes = sum([int(workout.durationSeconds) for workout in workouts]) / 60
 
-    return customResponse(True, 'Got data successfully', calories = calories, timeTrained = totalDurationMinutes)
+    return customResponse(True, 'Got data successfully', calories = calories)
 
 
 

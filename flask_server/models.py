@@ -11,12 +11,17 @@ workout_exercise = db.Table('workout_exercise',
 )
 
 
+
+
 #table to store workouts that user has done
-workout_record = db.Table('workout_record', 
+completed_workout = db.Table('workout_record', 
     db.Column('record_id', db.Integer, primary_key = True),  
-    db.Column('workout_id', db.Integer, db.ForeignKey('workout.id'), 
-    db.Column('timestamp', db.DateTime, default = datetime.utcnow)
+    db.Column('workout_id', db.Integer, db.ForeignKey('workout.id')),
+    db.Column('caloriesBurned', db.Integer, nullable = False) 
+    db.Column('timestamp', db.DateTime, default = datetime.utscnow)
 )
+
+
 
 
 #juction table for User and Food
@@ -59,6 +64,9 @@ class User(db.Model):
     #Workouts - one-to-many relationship
     workouts = db.relationship('Workout', backref = 'user')
 
+    # Runs - one-to-many relationship
+    runs = db.relationship('Run', backref = 'user')
+
 
 
 
@@ -83,11 +91,9 @@ class Exercise(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     durationSeconds = db.Column(db.Integer, unique = False, nullable = False)
     repetitions = db.Column(db.Integer, unique = False, nullable = False)
-    caloriesBurned = db.Column(db.Integer, unique = False, nullable = False)
-    exerciseType = db.Column(db.Text, unique = False, nullable = False)
 
 
-    
+
 
 class Workout(db.Model):
     __tablename__ = 'workout'
@@ -98,5 +104,19 @@ class Workout(db.Model):
     #Exercise - many-to-many relationship
     exercises = db.relationship('Exercise', secondary = workout_exercise, backref = 'exercise')
     userId = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+
+
+
+class Run(db.Model):
+    __tablename__ = 'run'
+    
+    id = db.Column(db.Integer, primary_key = True)
+    distance = db.Column(db.Integer, nullable = False, unique = False)
+    durationSeconds = db.Column(db.Integer, nullable = False, unique = False)
+    completionDate = db.Column(db.DateTime, nullable = False, default = datetime.utcnow)
+
+    userId = db.Column(db.Integer, db.ForeignKey('user.id'))
+
 
 
