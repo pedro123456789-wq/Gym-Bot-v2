@@ -11,19 +11,6 @@ workout_exercise = db.Table('workout_exercise',
 )
 
 
-
-
-#table to store workouts that user has done
-completed_workout = db.Table('workout_record', 
-    db.Column('record_id', db.Integer, primary_key = True),  
-    db.Column('workout_id', db.Integer, db.ForeignKey('workout.id')),
-    db.Column('caloriesBurned', db.Integer, nullable = False), 
-    db.Column('timestamp', db.DateTime, default = datetime.utscnow)
-)
-
-
-
-
 #juction table for User and Food
 food_record = db.Table('food_record', 
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')), 
@@ -102,6 +89,7 @@ class Workout(db.Model):
     name = db.Column(db.Text, nullable = False, unique = True) #make workout name unique
     
     #Exercise - many-to-many relationship
+    completionDate = db.Column(db.DateTime, default = datetime.utcnow)
     exercises = db.relationship('Exercise', secondary = workout_exercise, backref = 'exercise')
     userId = db.Column(db.Integer, db.ForeignKey('user.id'))
 
@@ -114,6 +102,7 @@ class Run(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     distance = db.Column(db.Integer, nullable = False, unique = False)
     durationSeconds = db.Column(db.Integer, nullable = False, unique = False)
+    caloriesBurned = db.Column(db.Integer, nullable = True, unique = False)
     completionDate = db.Column(db.DateTime, nullable = False, default = datetime.utcnow)
 
     userId = db.Column(db.Integer, db.ForeignKey('user.id'))

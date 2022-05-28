@@ -2,12 +2,15 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
+from flask_migrate import Migrate
 import sys
 
 from flask_server.neural_network.network import Network
 from flask_server.neural_network.data_scaler import DataScaler
 from flask_server.neural_network import network
 
+
+# TODO: Add flask migrate
 
 
 HOME_PATH = 'C:/Users/pl156/Documents/schoolwork/Computer Science A-Level/gym_bot_v2/flask_server/'
@@ -26,6 +29,7 @@ app.config['JSON_SORT_KEYS'] = False
 app.config['URL'] = 'http://localhost:8080'
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 encryptionHandler = Bcrypt()
 
 
