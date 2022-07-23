@@ -10,9 +10,6 @@ from flask_server.neural_network.data_scaler import DataScaler
 from flask_server.neural_network import network
 
 
-# TODO: Add flask migrate
-
-
 HOME_PATH = 'C:/Users/pl156/Documents/schoolwork/Computer Science A-Level/gym_bot_v2/flask_server/'
 NEURAL_NETWORK_PATH = 'C:/Users/pl156/Documents/schoolwork/Computer Science A-Level/gym_bot_v2/flask_server/neural_network'
 SQLALCHEMY_TRACK_MODIFICATIONS = True
@@ -36,6 +33,8 @@ encryptionHandler = Bcrypt()
 
 #load body fat prediction model and scalers
 print('Loading Body fat prediction model ...')
+
+# TODO: Clean UP
 
 PATH = 'C:/Users/pl156\Documents/schoolwork/Computer Science A-Level/gym_bot_v2/flask_server/models/body_fat_predictor'
 sys.path.insert(0, NEURAL_NETWORK_PATH)
