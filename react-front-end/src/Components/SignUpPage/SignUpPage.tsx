@@ -1,68 +1,96 @@
 import Navbar from "../NavBar/Navbar";
-import {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import RequestHandler from "../RequestHandler/RequestHandler";
 import LoadingIndicator from "../LoadingIndicator/LoadingIndicator";
-import Alert, {alertProps} from '../Alert/Alert';
+import useStyles from './styles';
+import { alertType, defaultAlertState, CustomAlert } from '../CustomAlert/CustomAlert';
+import { Grid, TextField } from "@material-ui/core";
+import { cammelCaseToText } from "../GlobalVariables";
 
+
+
+interface userDetails {
+    username: string,
+    email: string,
+    password: string,
+    passwordConfirmation: string
+}
+
+
+const defaultValues: userDetails = {
+    username: '',
+    email: '',
+    password: '',
+    passwordConfirmation: ''
+}
 
 
 function SignUpPage() {
     // store user inputs
-    const [userName, setUsername] = useState<string>('');
-    const [email, setEmail] = useState<string>();
-    const [password, setPassword] = useState<string>();
-    const [passwordConfirmation, setPasswordConfirmation] = useState<string>();
+    const [userDetails, setUserDetails] = useState<userDetails>(defaultValues);
+    const [alertState, setAlertState] = useState<alertType>(defaultAlertState);
 
-    // handle loading icon and alerts
+    // loading inidicator state
     const [isLoading, toggleLoad] = useState<boolean>(false);
-    const [showAlert, toggleAlert] = useState<boolean>(false);
-    const [alertData, setAlert] = useState<alertProps>({message: '', isSuccess: false});
 
     // react navigation
     const navigate = useNavigate();
+    const classes = useStyles();
 
 
+    function handleInputChange(e: any) {
+        const { name, value } = e.target;
+        setUserDetails({ ...userDetails, [name]: value });
+    }
 
-    function createAccount(){
-        // check if password confirmation  matches password 
-        if (passwordConfirmation !== password){
-            toggleAlert(true);
-            setAlert({message: 'The two passwords do not match', isSuccess: false})
 
-            // hide alert in 1 seconds
-            setTimeout(() => toggleAlert(false), 1000);
-            return;
+    function handleSubmit(e: any) {
+        e.preventDefault();
+
+        if (userDetails.password !== userDetails.passwordConfirmation) {
+            setAlertState({ isShow: true, isSuccess: false, message: 'The two passwords do not match' });
+            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+            setTimeout(() => setAlertState({ ...alertState, isShow: false }), 2000);
+            return -1;
+        }
+
+        const inputValues = Object.values(userDetails);
+
+        if (inputValues.includes('') || inputValues.includes(null) || inputValues.includes(undefined)) {
+            setAlertState({ isShow: true, isSuccess: false, message: 'You did not enter some values' });
+            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+            setTimeout(() => setAlertState({ ...alertState, isShow: false }), 2000);
+            return -1;
         }
 
         toggleLoad(true);
 
-        RequestHandler.sendRequest('POST', 
-                                  'sign-up', 
-                                  {'username' : userName, 
-                                  'password' : password, 
-                                  'email' : email}
-        ).then(
-            (response) => {
-                toggleLoad(false);
-                toggleAlert(true);
-                setAlert({message: response.message, isSuccess: response.success})
-
-                //hide alert after 1 second
+        RequestHandler.POST('sign-up', {
+            username: userDetails.username,
+            password: userDetails.password,
+            email: userDetails.email
+        }).then(response => {
+            if (response.success) {
+                setAlertState({ isShow: true, isSuccess: true, message: 'Created account successfully' });
+                setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
                 setTimeout(() => {
-                    toggleAlert(false)
-                    
-                    // redirect user to email confirmation page once account is created
-                    if (response.success){
-                        navigate('/confirm-email');
-
-                        // store username in localStorage
-                        window.localStorage.setItem('username', userName);
-                    }
-                }, 1000);
+                    setAlertState({ ...alertState, isShow: false });
+                    window.localStorage.setItem('username', userDetails.username);
+                    navigate('/confirm-email');
+                }, 2000);
+            } else {
+                setAlertState({ isShow: true, isSuccess: false, message: response.message });
+                setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+                setTimeout(() => setAlertState({ ...alertState, isShow: false }), 2000);
             }
-        )
+
+            toggleLoad(false);
+        })
     }
+
+
+
 
 
 
@@ -70,85 +98,51 @@ function SignUpPage() {
         <div>
             <Navbar />
 
-            <h1 className = 'text-center display-4'>
+            <h3 className='text-center mt-5'>
                 Sign Up
-            </h1>
+            </h3>
 
+            <div>
+                <CustomAlert alertState={alertState} />
 
-            <div className = 'text-center mt-5'>
-                {isLoading &&
-                    <LoadingIndicator />
-                }
+                <div className='mt-4'>
+                    <form onSubmit={handleSubmit}>
+                        <Grid container justify='center' alignItems='center' direction='column' spacing={2}>
+                            {
+                                Object.entries(userDetails).map(([key, value]) => {
+                                    return (
+                                        <Grid item>
+                                            <TextField
+                                                id={key}
+                                                name={key}
+                                                label={cammelCaseToText(key)}
+                                                type={key.includes('password') ? 'password' : 'text'}
+                                                value={value}
+                                                onChange={handleInputChange}
+                                                margin='normal'
+                                                fullWidth
+                                            />
+                                        </Grid>
+                                    )
+                                })
+                            }
 
-                {showAlert && 
-                    <Alert message = {alertData.message} isSuccess = {alertData.isSuccess} /> 
-                }
+                            <Grid item>
+                                <input value='Sign Up' className={classes.actionButton} type='submit' />
+                            </Grid>
 
-                <form>
-                    <div className = 'form-group'>
-                        <label htmlFor = 'email'>Email</label>
-                        
-                        <div className = 'mt-4 mb-4'>
-                            <input type = 'text' 
-                                className = 'form-control text-center' 
-                                id = 'email' 
-                                style = {{width: '40vw', display: 'inline-block'}}
-                                placeholder = 'Enter Email' 
-                                onChange = {event => setEmail(event.target.value)}
-                            />
-                        </div>
-                    </div>
+                            <Grid item>
+                                {isLoading &&
+                                    <LoadingIndicator />
+                                }
+                            </Grid>
+                        </Grid>
 
+                    </form>
 
-                    <div className='form-group'>
-                        <label htmlFor ='username'>Username</label>
-
-                        <div className = 'mt-4 mb-4'>
-                            <input type = 'text' 
-                                id = 'username'
-                                className = 'form-control text-center' 
-                                placeholder ='Enter Username' 
-                                style = {{width: '40vw', display: 'inline-block'}}
-                                onChange = {event => setUsername(event.target.value)}
-                            />
-                        </div>
-                    </div>
-                    
-                    <div className = 'form-group'>
-                        <label htmlFor = 'password'>Password</label>
-                        
-                        <div className = 'mt-4 mb-4'>
-                            <input type = 'password' 
-                                className = 'form-control text-center' 
-                                id = 'password' 
-                                placeholder = 'Enter Password' 
-                                style = {{width: '40vw', display: 'inline-block'}}
-                                onChange = {event => setPassword(event.target.value)}
-                            />
-                        </div>
-                    </div>
-
-
-                    <div className = 'form-group'>
-                        <div className = 'mt-4 mb-4'>
-                            <input type = 'password' 
-                                className = 'form-control text-center' 
-                                id = 'passwordConfirmation' 
-                                placeholder = 'Confirm Password' 
-                                style = {{width: '40vw', display: 'inline-block'}}
-                                onChange = {event => setPasswordConfirmation(event.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    <button type = 'button' 
-                            className = 'btn btn-dark btn-lg mt-3' 
-                            style = {{width: '50vw'}}
-                            onClick = {createAccount}>
-                                Create Account
-                    </button>
-                </form>
+                </div>
             </div>
+
         </div>
     );
 }

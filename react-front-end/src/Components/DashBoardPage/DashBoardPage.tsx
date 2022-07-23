@@ -9,36 +9,63 @@ import {
 } from '@material-ui/core';
 
 import {
-  Whatshot, 
-  ShutterSpeed, 
-  DirectionsRun, 
+  Whatshot,
+  ShutterSpeed,
+  DirectionsRun,
   RestaurantMenu
 } from '@material-ui/icons';
 
 import { Chart as ChartJS, registerables } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Line, Radar, Pie} from 'react-chartjs-2';
+import RequestHandler from '../RequestHandler/RequestHandler';
+import { useEffect, useState } from 'react';
+import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
 
 
 ChartJS.register(...registerables)
 
 
-const data = {
+
+
+
+const lineData = {
   labels: ['January', 'February', 'March', 'April', 'May'],
   datasets: [
     {
       label: 'Distance Ran',
-      fill: false,
+      fill: true,
       lineTension: 0.5,
       backgroundColor: 'red',
-      borderColor: 'rgba(0,0,0,1)',
+      borderColor: 'gray',
       borderWidth: 2,
+      color: 'gray',
       data: [65, 59, 80, 81, 56]
     }
   ]
 }
 
 
-const options = {
+const defaultPieChartData = {
+  labels: [
+    'Protein',
+    'Carbohydrates',
+    'Fat',
+  ],
+  datasets: [{
+    label: 'Loading Data...',
+    data: [33, 33, 33],
+    fill: true,
+    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+    borderColor: 'rgb(255, 99, 132)',
+    pointBackgroundColor: 'rgb(255, 99, 132)',
+    pointBorderColor: '#fff',
+    pointHoverBackgroundColor: '#fff',
+    pointHoverBorderColor: 'rgb(255, 99, 132)'
+  }]
+};
+
+
+const lineOptions = {
   responsive: true,
   maintainAspectRatio: true,
   title: {
@@ -46,11 +73,233 @@ const options = {
   },
 };
 
+interface nutrients {
+  calories: number,
+  protein: number,
+  fat: number,
+  carboHydrates: number
+}
 
+const defaultNutrients: nutrients = {
+  calories: 0,
+  protein: 0,
+  fat: 0,
+  carboHydrates: 0
+}
+
+interface exercises {
+  caloriesBurned: number,
+  durationSeconds: number,
+}
+
+const defaultExerciseData: exercises = {
+  caloriesBurned: 0,
+  durationSeconds: 0
+}
+
+interface run{
+  distanceRan: number, 
+  durationSeconds: number, 
+  caloriesBurned: number 
+}
+
+const defaultRunData: run = {
+  distanceRan: 0, 
+  durationSeconds: 0, 
+  caloriesBurned: 0
+}
+
+
+interface targets {
+  caloriesEatenTarget: number,
+  caloriesBurnedTarget: number,
+  distanceRanTarget: number,
+  minutesTrainedTarget: number
+}
+
+const defaultTargetData: targets = {
+  caloriesEatenTarget: 0,
+  caloriesBurnedTarget: 0,
+  distanceRanTarget: 0,
+  minutesTrainedTarget: 0
+}
+
+interface loadingState {
+  profile: boolean,
+  food: boolean,
+  workouts: boolean,
+  targets: boolean,
+  runs: boolean
+}
+
+const defaultLoadingState: loadingState = {
+  profile: false,
+  food: false,
+  workouts: false,
+  targets: false,
+  runs: false
+}
+
+// TODO:
+// Change database to allow user to enter distance in metres
+// Add loading indicator to prevent incosistencies
+// add separate states for workouts and runs to avoid conflicts
 
 function DashBoardPage() {
   const classes = useStyles();
   const theme = useTheme();
+  const [nutrientData, setNutrientData] = useState<nutrients>(defaultNutrients);
+  const [workoutData, setWorkoutData] = useState<exercises>(defaultExerciseData);
+  const [runData, setRunData] = useState<run>(defaultRunData);
+  const [targetData, setTargetData] = useState<targets>(defaultTargetData);
+  const [loadingStatus, setLoadingState] = useState<loadingState>(defaultLoadingState);
+  const [pieChartData, setPieChartData] = useState(defaultPieChartData);
+
+
+  function fetchData() {
+    setLoadingState({ profile: true, food: true, workouts: true, targets: true, runs: true });
+
+    // get username and token from localStorage 
+    const username = window.localStorage.getItem('username');
+    const token = window.localStorage.getItem('sessionToken');
+
+    // get targets from database 
+    RequestHandler.GET('profile', {
+      username: username,
+      token: token
+    }).then(response => {
+      setLoadingState({ ...loadingStatus, profile: false });
+      if (response.success) {
+        const responseData = response.data;
+        setTargetData({
+          caloriesEatenTarget: parseInt(responseData.caloriesEatenTarget),
+          caloriesBurnedTarget: parseInt(responseData.caloriesBurnedTarget),
+          distanceRanTarget: parseInt(responseData.distanceRanTarget),
+          minutesTrainedTarget: parseInt(responseData.minutesTrainedTarget)
+        });
+      } else {
+        alert(response.message);
+      }
+    });
+
+
+    // get current date and turn it into string 
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0
+    var yyyy = today.getFullYear();
+
+    const startDateString = `${dd}/${mm}/${yyyy}`
+
+    // Get food records 
+    RequestHandler.GET('food', {
+      username: window.localStorage.getItem('username'),
+      token: window.localStorage.getItem('sessionToken'),
+      startDate: startDateString,
+      endDate: '+1'
+    }).then(response => {
+      setLoadingState({ ...loadingStatus, food: false })
+
+      if (response.success) {
+        const data = response.data
+
+        data.forEach((item: nutrients) => {
+          setNutrientData({
+            calories: nutrientData.calories + item.calories,
+            fat: nutrientData.fat + item.fat,
+            carboHydrates: nutrientData.carboHydrates + item.carboHydrates,
+            protein: nutrientData.protein + item.protein
+          });
+        });
+
+        const nutrientBreakdown = {
+          labels: [
+            'Protein',
+            'Carbohydrates',
+            'Fat',
+          ],
+          datasets: [{
+            label: 'Nutrient breakdown',
+            data: [nutrientData.protein, nutrientData.carboHydrates, nutrientData.fat],
+            fill: true,
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgb(255, 99, 132)',
+            pointBackgroundColor: 'rgb(255, 99, 132)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(255, 99, 132)'
+          }]
+        };
+
+        setPieChartData(nutrientBreakdown);
+        console.log(pieChartData);
+      } else {
+        alert(response.message);
+      }
+    });
+
+    // get workouts 
+    RequestHandler.GET('workouts', {
+      username: window.localStorage.getItem('username'),
+      token: window.localStorage.getItem('sessionToken'),
+      startDate: startDateString,
+      endDate: '+1',
+      targetWorkouts: 'ALL'
+    }).then(response => {
+      setLoadingState({ ...loadingStatus, workouts: false })
+      if (response.success) {
+        const workouts = response.workouts;
+        var totalCalories = 0;
+        var totalSeconds = 0;
+
+        for (let workout of workouts) {
+          totalCalories += parseInt(workout.caloriesBurned)
+
+          const exercises = workout.exercises;
+          for (let exercise of exercises) {
+            totalSeconds += parseInt(exercise.durationSeconds)
+          }
+        }
+
+        setWorkoutData({
+          ...workoutData,
+          caloriesBurned: totalCalories, 
+          durationSeconds: totalSeconds
+        });
+        
+      } else {
+        alert(response.message);
+      }
+    })
+
+    // get runs 
+    RequestHandler.GET('runs', {
+      username: username,
+      token: token,
+      startDate: startDateString,
+      endDate: '+1'
+    }).then(response => {
+      setLoadingState({ ...loadingStatus, runs: false });
+      if (response.success) {
+        const runs = response.data.runs;
+
+        runs.forEach((run: any) => {
+          setRunData({
+            ...runData,
+            durationSeconds: runData.durationSeconds + parseInt(run.duration),
+            caloriesBurned: runData.caloriesBurned + parseInt(run.caloriesBurned),
+            distanceRan: runData.distanceRan + parseInt(run.distance)
+          });
+        })
+      } else {
+        alert(response.message);
+      }
+    })
+  }
+
+  useEffect(fetchData, []);
+
+
 
   return (
     <div className={classes.root}>
@@ -58,92 +307,99 @@ function DashBoardPage() {
       <SideBar />
 
       <div className={classes.content}>
-        <Typography variant='h5' color='textSecondary'>
+        <Typography variant='h5' color='textSecondary' style={{ paddingLeft: '2vw' }}>
           Welcome back
         </Typography>
 
-        <Grid container spacing={2} className={classes.gridRoot}>
-          <Grid item xs = {12} sm = {6} md = {3}>
-            <div className={classes.dataGrid}>
-              <h5 className={classes.dataTitle}>Calories Burned</h5>
-              <Whatshot className={classes.dataIcon} style = {{color: 'red' }}/>
-              
-              <div>
-                <LinearProgress 
-                  classes = {{root: classes.progressBarRoot, bar: classes.progressBarTop}} 
-                  variant = "determinate"
-                  value = {80}
-                />
-              </div>
+        {Object.values(loadingStatus).includes(true) ?
+          <div className='text-center'>
+            <LoadingIndicator />
+          </div>
+          :
+          <>
+            <Grid container spacing={2} className={classes.gridRoot}>
+              <Grid item xs={12} sm={6} md={3}>
+                <div className={classes.dataGrid}>
+                  <h5 className={classes.dataTitle}>Calories Burned</h5>
+                  <Whatshot className={classes.dataIcon} style={{ color: 'red' }} />
 
-              <p className = {classes.progressLabel}>3000 / 4000</p>
-            </div>
-          </Grid>
+                  <div>
+                    <LinearProgress
+                      classes={{ root: classes.progressBarRoot, bar: classes.progressBarTop }}
+                      variant="determinate"
+                      value={((workoutData.caloriesBurned + runData.caloriesBurned) / targetData.caloriesBurnedTarget) * 100} />
+                  </div>
 
-
-          <Grid item xs = {12} sm = {6} md = {3}>
-            <div className={classes.dataGrid}>
-              <h5 className={classes.dataTitle}>Minutes Trained</h5>
-              <ShutterSpeed className={classes.dataIcon} style = {{color: 'gray'}} />
-
-              <div>
-                <LinearProgress 
-                  classes = {{root: classes.progressBarRoot, bar: classes.progressBarTop}} 
-                  variant = "determinate"
-                  value = {60}
-                />
-              </div>
-
-              <p className = {classes.progressLabel}>3000 / 4000</p>
-            </div>
-          </Grid>
+                  <p className={classes.progressLabel}>{workoutData.caloriesBurned + runData.caloriesBurned} / {targetData.caloriesBurnedTarget}</p>
+                </div>
+              </Grid>
 
 
-          <Grid item xs = {12} sm = {6} md = {3}>
-            <div className={classes.dataGrid}>
-              <h5 className={classes.dataTitle}>Distance Covered</h5>
-              <DirectionsRun className={classes.dataIcon} style = {{color: '#2abedb'}}/>
-     
-              <div>
-                <LinearProgress 
-                  classes = {{root: classes.progressBarRoot, bar: classes.progressBarTop}} 
-                  variant = "determinate"
-                  value = {80}
-                />
-              </div>
+              <Grid item xs={12} sm={6} md={3}>
+                <div className={classes.dataGrid}>
+                  <h5 className={classes.dataTitle}>Minutes Trained</h5>
+                  <ShutterSpeed className={classes.dataIcon} style={{ color: 'gray' }} />
 
-              <p className = {classes.progressLabel}>3000 / 4000</p>
-            </div>
-          </Grid>
+                  <div>
+                    <LinearProgress
+                      classes={{ root: classes.progressBarRoot, bar: classes.progressBarTop }}
+                      variant="determinate"
+                      value={((workoutData.durationSeconds + runData.durationSeconds) / (targetData.minutesTrainedTarget * 60)) * 100} />
+                  </div>
 
-          <Grid item xs = {12} sm = {6} md = {3}>
-            <div className={classes.dataGrid}>
-              <h5 className={classes.dataTitle}>Calories Eaten</h5>
-              <RestaurantMenu className={classes.dataIcon} style = {{color: '#1bf207'}}/>
+                  <p className={classes.progressLabel}>{Math.floor((workoutData.durationSeconds + runData.durationSeconds) / 60)} / {targetData.minutesTrainedTarget}</p>
+                </div>
+              </Grid>
 
-              <div>
-                <LinearProgress 
-                  classes = {{root: classes.progressBarRoot, bar: classes.progressBarTop}} 
-                  variant = "determinate"
-                  value = {80}
-                />
-              </div>
 
-              <p className = {classes.progressLabel}>3000 / 4000</p>
-            </div>
-          </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <div className={classes.dataGrid}>
+                  <h5 className={classes.dataTitle}>Distance Covered</h5>
+                  <DirectionsRun className={classes.dataIcon} style={{ color: '#2abedb' }} />
 
-          <Grid item xs = {12} sm = {12} md = {6}>
-            <p>
-              Time trained
-            </p>
+                  <div>
+                    <LinearProgress
+                      classes={{ root: classes.progressBarRoot, bar: classes.progressBarTop }}
+                      variant="determinate"
+                      value={(runData.distanceRan / targetData.distanceRanTarget) * 100} />
+                  </div>
 
-            <Line 
-              data = {data}
-              options = {options}
-            />
-          </Grid>
-        </Grid>
+                  <p className={classes.progressLabel}>{runData.distanceRan} / {targetData.distanceRanTarget}</p>
+                </div>
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={3}>
+                <div className={classes.dataGrid}>
+                  <h5 className={classes.dataTitle}>Calories Eaten</h5>
+                  <RestaurantMenu className={classes.dataIcon} style={{ color: '#1bf207' }} />
+
+                  <div>
+                    <LinearProgress
+                      classes={{ root: classes.progressBarRoot, bar: classes.progressBarTop }}
+                      variant="determinate"
+                      value={(nutrientData.calories / targetData.caloriesEatenTarget) * 100} />
+                  </div>
+
+                  <p className={classes.progressLabel}>{nutrientData.calories} / {targetData.caloriesEatenTarget}</p>
+                </div>
+              </Grid>
+            </Grid><Grid container spacing={2} className={classes.gridRoot}>
+              <Grid item xs={12} sm={12} md={4}>
+                <div className={classes.graphDiv}>
+                  <Line
+                    data={lineData}
+                    options={lineOptions} />
+                </div>
+              </Grid>
+
+              <Grid item xs={12} sm={12} md={4}>
+                <div>
+                  <Pie data = {pieChartData} />
+                </div>
+              </Grid>
+            </Grid>
+          </>
+        }
       </div>
     </div>
   )

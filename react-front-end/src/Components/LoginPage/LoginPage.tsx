@@ -1,107 +1,127 @@
 import Navbar from "../NavBar/Navbar";
-import {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import RequestHandler from "../RequestHandler/RequestHandler";
 import LoadingIndicator from "../LoadingIndicator/LoadingIndicator";
-import Alert, { alertProps } from "../Alert/Alert";
+import { alertType, defaultAlertState, CustomAlert } from '../CustomAlert/CustomAlert';
+import { Grid, TextField } from "@material-ui/core";
+import { cammelCaseToText } from "../GlobalVariables";
+import useStyles from './styles';
+
+
+
+
+interface loginDetails {
+    username: string | null,
+    password: string | null
+}
+
+
+const defaultValues: loginDetails = {
+    username: '',
+    password: ''
+}
 
 
 function LoginPage() {
-    const [username, setUsername] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
+    const classes = useStyles();
+    const [loginData, setLoginData] = useState<loginDetails>(defaultValues);
+    const [alertState, setAlertState] = useState<alertType>(defaultAlertState);
     const [isLoading, toggleLoad] = useState<boolean>(false);
-    const [showAlert, toggleAlert] = useState<boolean>(false);
-    const [alertData, setAlertData] = useState<alertProps>({message: '', isSuccess: false});
-
     const navigate = useNavigate();
-    
 
-    function logIn(){
+    function handleInputChange(e: any) {
+        const { name, value } = e.target;
+        console.log(name);
+        console.log(value);
+
+        setLoginData({ ...loginData, [name]: value });
+    }
+
+
+    function handleSubmit(e: any) {
+        e.preventDefault();
+
+        if (Object.values(loginData).includes('') || Object.values(loginData).includes(null) || Object.values(loginData).includes(undefined)) {
+            setAlertState({ isShow: true, isSuccess: false, message: 'You did not enter some values' });
+            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+            setTimeout(() => setAlertState({ ...alertState, isShow: false }), 2000);
+
+            return -1;
+        }
+
         // show loading indicator
         toggleLoad(true);
 
-        RequestHandler.sendRequest('POST', 'log-in', {'username' : username, 'password' : password}).then(
-            (response) => {
-                // hide loading indicator once respone is recieved
-                toggleLoad(false);
-                toggleAlert(true);
+        RequestHandler.POST('log-in', loginData).then(response => {
+            if (response.success) {
+                // save session token in local storage
+                const token = response.token
+                window.localStorage.setItem('sessionToken', token);
+                window.localStorage.setItem('username', loginData.username || '');
 
-                if (response.success){
-                    setAlertData({message: 'Logged in successfully', isSuccess: true});
-
-                    // store login token in local storage
-                    window.localStorage.setItem('sessionToken', response.token)
-                }else{
-                    setAlertData({message: response.message, isSuccess: false})
-                }
-                
-                
-                // hide alert after 2 seconds 
+                setAlertState({ isShow: true, isSuccess: true, message: 'Logged In successfully' });
+                setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
                 setTimeout(() => {
-                    if (response.success){
-                        // store session validation in local storage
-                        const token = response.token
-                        window.localStorage.setItem('sessionToken', token);
-                        window.localStorage.setItem('username', username);
-
-                        // redirect to dashboard page
-                        navigate('/dashboard')
-                    }
-                    toggleAlert(false);
-                }, 2000)
+                    setAlertState({ ...alertState, isShow: false });
+                    navigate('/dashboard');
+                }, 1500);
+            } else {
+                setAlertState({ isShow: true, isSuccess: false, message: response.message });
+                setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+                setTimeout(() => setAlertState({ ...alertState, isShow: false }), 2000);
             }
-        )
+
+            toggleLoad(false);
+        })
     }
 
 
     return (
         <div>
             <Navbar />
-            
-            <h1 className = 'text-center display-4'>
-                Login
-            </h1>
 
-            <div className = 'text-center mt-5 pt-5'>
-                {isLoading && <LoadingIndicator />}
-                {showAlert && <Alert message = {alertData.message} isSuccess = {alertData.isSuccess} />}
+            <h3 className='text-center mt-5 pt-5'>
+                Log In
+            </h3>
 
-                <form>
-                    <div className='form-group'>
-                        <label htmlFor ='username'>Username</label>
+            <div>
+                <CustomAlert alertState={alertState} />
 
-                        <div className = 'mt-4 mb-4'>
-                            <input type = 'text' 
-                                id = 'username'
-                                className = 'form-control text-center' 
-                                placeholder ='Enter Username' 
-                                style = {{width: '40vw', display: 'inline-block'}}
-                                onChange = {event => setUsername(event.target.value)}
-                            />
-                        </div>
-                    </div>
-                    
-                    <div className = 'form-group'>
-                        <label htmlFor = 'password'>Password</label>
-                        
-                        <div className = 'mt-4 mb-4'>
-                            <input type = 'password' 
-                                className = 'form-control text-center' 
-                                id = 'password' 
-                                placeholder = 'Enter Password' 
-                                style = {{width: '40vw', display: 'inline-block'}}
-                                onChange = {event => setPassword(event.target.value)}
-                            />
-                        </div>
-                    </div>
+                <div className='mt-5 pt-5'>
+                    <form onSubmit={handleSubmit}>
+                        <Grid container alignItems='center' justify='center' direction='column' spacing={3}>
+                            {Object.entries(loginData).map(([key, value]) => {
+                                return (
+                                    <Grid item>
+                                        <TextField
+                                            id={key}
+                                            name={key}
+                                            label={cammelCaseToText(key)}
+                                            type={key == 'password' ? 'password' : 'text'}
+                                            value={value}
+                                            onChange={handleInputChange}
+                                            margin='normal'
+                                            fullWidth
+                                        />
+                                    </Grid>
+                                )
+                            })}
 
-                    <button type = 'button' 
-                            className = 'btn btn-dark btn-lg mt-5' 
-                            style = {{width: '50vw'}}
-                            onClick = {logIn}>
-                                Log In
-                    </button>
-                </form>
+                            <Grid item>
+                                <input className={classes.actionButton} value='Log In' type='submit' />
+                            </Grid>
+
+                            {isLoading &&
+                                <Grid item>
+                                    <LoadingIndicator />
+                                </Grid>
+                            }
+                        </Grid>
+                    </form>
+                </div>
+
+
             </div>
         </div>
     );

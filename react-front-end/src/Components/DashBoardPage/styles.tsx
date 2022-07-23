@@ -9,7 +9,6 @@ export default makeStyles(theme => ({
     content: {
         flexGrow: 1,
         paddingTop: theme.spacing(10),
-        paddingLeft: theme.spacing(2),
         background: 'white'
     },
     gridRoot: {
@@ -47,5 +46,13 @@ export default makeStyles(theme => ({
     progressLabel: {
         color: 'white', 
         fontSize: theme.spacing(2)
+    }, 
+    graphDiv: {
+        borderWidth: theme.spacing(0.5),
+        padding: theme.spacing(1), 
+        borderColor: 'gray', 
+        borderStyle: 'solid', 
+        borderRadius: theme.spacing(0.5), 
+        zIndex: 1
     }
 }));

@@ -23,7 +23,8 @@ import {
   FitnessCenter,
   Event,
   TrackChanges,
-  AccountCircle
+  AccountCircle, 
+  EmojiFoodBeverageOutlined
 } from '@material-ui/icons';
 
 import MenuIcon from '@material-ui/icons/Menu';
@@ -38,14 +39,14 @@ const paths = [
     'name': 'Dashboard'
   },
   {
-    'dir': '/saved-workouts',
+    'dir': '/workouts',
     'icon': <FitnessCenter />,
-    'name': 'Saved Workouts'
+    'name': 'Workouts'
   },
   {
-    'dir': '/progress',
-    'icon': <Event />,
-    'name': 'Progress'
+    'dir': '/nutrition',
+    'icon': <EmojiFoodBeverageOutlined />,
+    'name': 'Nutrition'
   },
   {
     'dir': '/targets',
@@ -53,7 +54,7 @@ const paths = [
     'name': 'Targets'
   },
   {
-    'dir': '/profile',
+    'dir': '/user-profile',
     'icon': <AccountCircle />,
     'name': 'Profile'
   }

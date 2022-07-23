@@ -1,6 +1,6 @@
 function LoadingIndicator() {
     return (
-        <div>
+        <div style = {{minHeight: '100vh'}}>
             <div className = 'lds-ellipsis'><div></div><div></div><div></div><div></div></div>
         </div>
     );

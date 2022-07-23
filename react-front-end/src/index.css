@@ -15,6 +15,48 @@ code {
 
 
 
+/* scroll bar styling */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 6px;
+}
+
+
+::-webkit-scrollbar-track {
+  background: white;
+}
+
+
+::-webkit-scrollbar-thumb {
+  background: white;
+}
+
+
+::-webkit-scrollbar-thumb:hover {
+  background: #022669;
+}
+
+
+
+
+/* number input styles */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+::-webkit-input-placeholder {
+  text-align: center;
+}
+
+:-moz-placeholder {
+  text-align: center;
+}
+
+
+
+
 /* loading indicator styles */
 .lds-ellipsis {
   display: inline-block;
@@ -83,6 +125,7 @@ button:focus{
 
 .navbar{
   background: #022669;
+  min-height: 30px;
 }
 
 .login-required-image{

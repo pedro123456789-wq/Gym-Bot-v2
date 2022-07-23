@@ -1,98 +1,96 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import Navbar from '../NavBar/Navbar';
 import RequestHandler from '../RequestHandler/RequestHandler';
-import Alert, {alertProps} from '../Alert/Alert';
 import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { CustomAlert, alertType, defaultAlertState } from '../CustomAlert/CustomAlert';
+import { Grid, TextField } from '@material-ui/core';
+import useStyles from './styles';
 
 
 function EmailConfirmationPage() {
-    const [confirmationCode, setConfirmationCode] = useState<number>(0);
-    const [alertData, setAlert] = useState<alertProps>({message: '', isSuccess: false});
-    const [showAlert, toggleAlert] = useState<boolean>(false);
+    const [confirmationCode, setConfirmationCode] = useState<number | null>(null);
+    const [alertState, setAlertState] = useState<alertType>(defaultAlertState);
     const [isLoading, toggleLoad] = useState<boolean>(false);
-    
+    const classes = useStyles();
     const navigate = useNavigate();
 
 
-    function confirmEmail(){
+    function confirmEmail(e: any) {
+        e.preventDefault();
         toggleLoad(true);
 
-        // get username from local storage 
-        const userName:string  = window.localStorage.getItem('username') || '';
+        if (confirmationCode == null || isNaN(confirmationCode)) {
+            setAlertState({ isShow: true, isSuccess: false, message: 'You did not enter a confirmation code' });
+            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+            setTimeout(() => setAlertState({ ...alertState, isShow: false }), 2000);
+        }
 
-        RequestHandler.sendRequest('PUT', 
-                                   'confirm-email', 
-                                   {'username' : userName, 
-                                    'confirmationCode' : confirmationCode}
-        ).then(
+        // get username from local storage 
+        const userName: string = window.localStorage.getItem('username') || '';
+
+        RequestHandler.PUT('confirm-email', {
+            'username': userName,
+            'confirmationCode': confirmationCode
+        }).then(
             (response) => {
                 toggleLoad(false);
-                toggleAlert(true);
 
-                if (response.success){
-                    setAlert({
-                         message: 'Account verified', 
-                        isSuccess: true
-                        })
-                }else{
-                    setAlert({
-                        message: response.message, 
-                        isSuccess: false
-                    })
+                if (response.success) {
+                    setAlertState({ isShow: true, isSuccess: true, message: 'Email Verified' });
+                    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+                    setTimeout(() => {
+                        setAlertState({ ...alertState, isShow: false });
+                        navigate('/log-in');
+                    }, 1500)
+                } else {
+                    setAlertState({ isShow: true, isSuccess: false, message: response.message });
+                    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+                    setTimeout(() => setAlertState({ ...alertState, isShow: false }), 2000);
                 }
             }
-        )
-
-
-        // hide alert after 2 seconds 
-        setTimeout(() => {
-            toggleAlert(false);
-            navigate('/log-in');
-        }, 2000)
-
+        );
     }
-    
+
     return (
         <div>
             <Navbar />
 
-            {
-                <div className = 'mt-2'>
-                    {showAlert && <Alert message = {alertData.message} isSuccess = {alertData.isSuccess}/>}
-                </div>
-            }
-
-            <h1 className = 'text-center display-4 mt-5'>
+            <h3 className='text-center mt-5 pt-5'>
                 Confirm Email
-            </h1>
+            </h3>
 
 
-            <form>
-                <div className = 'form-group text-center mt-5 pt-5'>
-                    <label htmlFor = 'email-confirmation' className = 'text-center'>Confirmation Code</label>
+            <div>
+                <CustomAlert alertState={alertState} />
 
-                    <div className = 'mt-5 mb-5 pb-5'>
-                        <input type = 'number'
-                               id = 'email-cofirmation'
-                               className = 'form-control text-center'
-                               placeholder = 'Enter Confirmation Code'
-                               onChange = {event => setConfirmationCode(event.target.value as unknown as number)}
-                        />
-                    </div>
+                <div className='mt-5 pt-5'>
+                    <form onSubmit = {confirmEmail}>
+                        <Grid container justify='center' alignItems='center' direction='column' spacing={2}>
+                            <Grid item>
+                                <TextField
+                                    id='confirmationCode'
+                                    name='confirmationCode'
+                                    label='Confirmation Code'
+                                    type='text'
+                                    value={confirmationCode}
+                                    onChange={(e: any) => setConfirmationCode(e.target.value)}
+                                    margin='normal'
+                                    fullWidth
+                                />
+                            </Grid>
 
-                    <div>
-                        <button type = 'button' 
-                            className = 'btn btn-dark btn-lg mt-3' 
-                            style = {{width: '50vw'}}
-                            onClick = {confirmEmail}>
-                                Confirm Email
-                        </button>
-                    </div>
+                            <Grid item>
+                                <input type='submit' value='Confirm Email' className = {classes.actionButton}/>
+                            </Grid>
+
+                            <Grid item>
+                                {isLoading && <LoadingIndicator />}
+                            </Grid>
+                        </Grid>
+                    </form>
                 </div>
-            </form>
-
-            {isLoading && <LoadingIndicator />}
+            </div>
         </div>
     );
 }
