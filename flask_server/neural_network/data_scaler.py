@@ -65,8 +65,8 @@ class DataScaler:
                 stream.close()
                 return True
 
-        except Exception:
-            print('Invalid path')
+        except Exception as e:
+            print(e)
             return False 
 
 
@@ -75,14 +75,15 @@ class DataScaler:
 
         try:
             with open(f'{path}.pickle', 'rb') as stream:
-                scaler = load(path)
+                scaler = load(stream)
                 self.featureMaxMin = scaler.featureMaxMin
                 self.minimum = scaler.minimum
                 self.maximum = scaler.maximum
                 
                 return True
         
-        except Exception:
+        except Exception as e:
+            print(e)
             return False
                             
 

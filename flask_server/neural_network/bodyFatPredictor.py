@@ -1,4 +1,3 @@
-from argparse import Action
 from fc_layer import FCLayer
 from activation_layer import ActivationLayer
 from performance_tracker import PerformanceTracker
@@ -40,10 +39,12 @@ if __name__ == '__main__':
     convertedY = convertedY.reshape(convertedY.shape[0], 1, 1)
     convertedX = convertedX.reshape(convertedX.shape[0], 1, X.shape[1])
 
-    #build network model:
-        #input layer with 4 neurons
-        #hidden layer with 4 neurons
-        #output layer with one neuron and sigmoid activation function 
+    print(xScaler.featureMaxMin)
+
+    # build network model:
+    #     input layer with 4 neurons
+    #     hidden layer with 4 neurons
+    #     output layer with one neuron and sigmoid activation function 
 
 
     network = Network()

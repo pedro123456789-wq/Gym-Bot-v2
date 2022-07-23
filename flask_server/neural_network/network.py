@@ -83,8 +83,8 @@ class Network:
                 stream.close()
                 return True
 
-        except Exception:
-            print('Invalid path')
+        except Exception as e:
+            print(e)
             return False 
 
 
@@ -100,7 +100,7 @@ class Network:
                 stream.close()
                 return True
         
-        except Exception:
-            print('Invalid path')
+        except Exception as e:
+            print(e)
             return False 
     
