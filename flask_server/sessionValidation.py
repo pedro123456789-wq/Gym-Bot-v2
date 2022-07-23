@@ -11,28 +11,49 @@ from functools import wraps
 import jwt
 from datetime import datetime
 
+accountFields = [
+    'caloriesEatenTarget',
+    'caloriesBurnedTarget',
+    'minutesTrainedTarget',
+    'distanceRanTarget',
+    'height',
+    'weight',
+    'gender',
+    'age'
+]
 
-def loginRequired(methods = None):
-    if methods == None: methods = []
+
+def loginRequired(methods=None):
+    if methods == None:
+        methods = []
 
     def wrapper(function):
         @wraps(function)
         def decorated(*args, **kwargs):
             if request.method in methods:
-                data = request.get_json()
+                # if request method is GET, the login data will be sent as headers, not in the request body
+                if request.method != 'GET':
+                    data = request.get_json()
 
-                #check if headers are valid with json schema
-                try:
-                    validate(data, schema = sessionValidationSchema)
-                except exceptions.ValidationError as error:
-                    return customResponse(False, error.message)
+                    # check if headers are valid with json schema
+                    try:
+                        validate(data, schema=sessionValidationSchema)
+                    except exceptions.ValidationError as error:
+                        return customResponse(False, error.message)
 
-                username, token = data.get('username'), data.get('token')
+                    username, token = data.get('username'), data.get('token')
+                else:
+                    headers = request.headers
+                    username, token = headers.get('username'), headers.get('token')
 
-                #check if token is valid and has not expired
+                    if username == None or token == None:
+                        return customResponse(False, 'Missing required headers')
+
+                # check if token is valid and has not expired
                 try:
                     decodedToken = jwt.decode(token, app.config['SECRET_KEY'])
-                    tokenUsername, tokenExpiration = decodedToken.get('user'), decodedToken.get('exp')
+                    tokenUsername, tokenExpiration = decodedToken.get(
+                        'user'), decodedToken.get('exp')
 
                     if tokenUsername != username:
                         return customResponse(False, 'Token does not match username')
@@ -42,42 +63,44 @@ def loginRequired(methods = None):
                     return customResponse(False, 'Invalid token')
 
             return function(*args, **kwargs)
-        return decorated    
+        return decorated
     return wrapper
 
 
+def hasProfile(targetUser: User):
+    # check if user has set up profile
+    for field in accountFields:
+        if eval(f'targetUser.{field}') == None:
+            return False
+
+    return True
 
 
-def profileRequired(methods = []):
+def profileRequired(methods=[]):
     def wrapper(function):
         @wraps(function)
         def decorated(*args, **kwargs):
             if request.method in methods:
-                data = request.get_json()
-                username = data.get('username')
+
+                if request.method != 'GET':
+                    data = request.get_json()
+                    username = data.get('username')
+                else:
+                    headers = request.headers
+                    username = headers.get('username')
 
                 if username == None:
                     return customResponse(False, 'Missing username')
 
-                targetUser = User.query.filter_by(username = username).first()
-                accountFields = [
-                                    'caloriesEatenTarget', 
-                                    'caloriesBurnedTarget', 
-                                    'minutesTrainedTarget', 
-                                    'distanceRanTarget', 
-                                    'height', 
-                                    'weight', 
-                                    'gender',
-                                    'age'
-                                ]  
+                targetUser = User.query.filter_by(username=username).first()
 
-                #check if user has set up profile
-                for field in accountFields:
-                    if eval(f'targetUser.{field}') == None:
-                        return customResponse(False, f'Profile Error')
-            
+                # check if user is in database
+                if targetUser == None:
+                    return customResponse(False, 'User not found')
+
+                if not hasProfile(targetUser):
+                    return customResponse(False, 'Profile Error')
+
             return function(*args, **kwargs)
         return decorated
     return wrapper
-
-                
