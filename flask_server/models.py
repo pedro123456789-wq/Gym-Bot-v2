@@ -76,6 +76,7 @@ class Exercise(db.Model):
     __tablename__ = 'exercise'
 
     id = db.Column(db.Integer, primary_key = True)
+    name = db.Column(db.Text, unique = False, nullable = False)
     durationSeconds = db.Column(db.Integer, unique = False, nullable = False)
     repetitions = db.Column(db.Integer, unique = False, nullable = False)
 
@@ -86,10 +87,11 @@ class Workout(db.Model):
     __tablename__ = 'workout'
 
     id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.Text, nullable = False, unique = True) #make workout name unique
+    name = db.Column(db.Text, nullable = False, unique = False) #make workout name unique
     
     #Exercise - many-to-many relationship
     completionDate = db.Column(db.DateTime, default = datetime.utcnow)
+    caloriesBurned = db.Column(db.Integer, nullable = True, unique = False)
     exercises = db.relationship('Exercise', secondary = workout_exercise, backref = 'exercise')
     userId = db.Column(db.Integer, db.ForeignKey('user.id'))
 
@@ -105,7 +107,7 @@ class Run(db.Model):
     caloriesBurned = db.Column(db.Integer, nullable = True, unique = False)
     completionDate = db.Column(db.DateTime, nullable = False, default = datetime.utcnow)
 
-    userId = db.Column(db.Integer, db.ForeignKey('user.id'))
+    userId = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
 
 
 
