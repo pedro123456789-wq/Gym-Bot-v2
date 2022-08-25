@@ -1,18 +1,20 @@
-import { duration, Grid } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import {
-    PlayArrow,
+    PlayArrowOutlined,
     StopOutlined,
-    ExitToApp
+    ExitToAppOutlined, 
+    DirectionsRunOutlined, 
+    TimerOutlined, 
+    WhatshotOutlined, 
+    FavoriteOutlined
 } from '@material-ui/icons';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { alertType, CustomAlert, defaultAlertState } from '../CustomAlert/CustomAlert';
+import { apiUrl } from '../GlobalVariables';
 import RequestHandler from '../RequestHandler/RequestHandler';
 import useStyles from './styles';
 
-// TODO: 
-// Add calorie tracking options
-// Show pop up when workout is saved
 
 interface WorkoutState {
     hasStarted: boolean,
@@ -56,6 +58,8 @@ function LiveWorkoutPage() {
     const [workoutState, setWorkoutState] = useState<WorkoutState>(defaultWorkoutState);
     const [durationState, setDurationState] = useState<DurationState>(defaultDurationState);
     const [alertState, setAlertState] = useState<alertType>(defaultAlertState);
+    const [heartRate, setHeartRate] = useState<number>(-1);
+    const [caloriesBurned, setCaloriesBurned] = useState<number>(-1);
     const navigate = useNavigate();
 
     // used to avoid inconsistencies due to delay in time update
@@ -64,6 +68,22 @@ function LiveWorkoutPage() {
     // initialise with default element, since ts does not allow one to initialize with empty list 
     const [completedExercises, setCompletedExercises] = useState<[Exercise]>([{ durationSeconds: 0, name: '' }]);
 
+    function getCaloriesBurned(){
+        RequestHandler.GET('calories-burned-prediction', 
+        {
+            username: window.localStorage.getItem('username'), 
+            token: window.localStorage.getItem('sessionToken'), 
+            duration: (durationState.totalDurationSeconds / 60), 
+            heartRate: heartRate
+        }).then((response) => { 
+            if (response.success){
+                setCaloriesBurned(response.prediction);
+            }else{
+                alert(response.message);
+            }
+        });
+
+    }
 
     function saveWorkout() {
         // list to send exercises to server
@@ -79,13 +99,11 @@ function LiveWorkoutPage() {
             }
         });
 
-        console.log(completedExercises);
-
         RequestHandler.POST('workouts', {
             username: window.localStorage.getItem('username'),
             token: window.localStorage.getItem('sessionToken'),
             name: 'Live Workout Session',
-            caloriesBurned: 100,
+            caloriesBurned: caloriesBurned,
             exercises: addedExercises
         }).then((response) => {
             if (response.success) {
@@ -94,13 +112,28 @@ function LiveWorkoutPage() {
                     isSuccess: true,
                     message: 'Workout Saved successfuly'
                 });
-                navigate('/dashboard');
+
+                setTimeout(() => {
+                    setAlertState({
+                        ...alertState, 
+                        isShow: false
+                    });
+
+                    navigate('/dashboard');
+                }, 1000)
             } else {
                 setAlertState({
                     isShow: true,
                     isSuccess: false,
                     message: response.message
                 });
+
+                setTimeout(() => {
+                    setAlertState({
+                        ...alertState, 
+                        isShow: false
+                    });
+                }, 2000);
             }
         });
     }
@@ -203,7 +236,7 @@ function LiveWorkoutPage() {
                                                 });
                                             }}
                                         >
-                                            <PlayArrow style={{ fontSize: '3rem', color: '#06064a' }} />
+                                            <PlayArrowOutlined style={{ fontSize: '3rem', color: '#06064a' }} />
                                         </button>
                                     </div>
                                 </Grid>
@@ -240,7 +273,7 @@ function LiveWorkoutPage() {
                                                         hasFinished: true
                                                     })
                                                 }>
-                                                <ExitToApp style={{ fontSize: '2rem', color: 'black' }} />
+                                                <ExitToAppOutlined style={{ fontSize: '2rem', color: 'black' }} />
                                             </button>
                                         </div>
                                     </Grid>
@@ -249,18 +282,33 @@ function LiveWorkoutPage() {
                         : <>
                             <Grid container spacing={5} className={classes.gridRoot} alignItems='center' direction='column'>
                                 <Grid item xs={12} md={6} sm={12}>
-                                    <div className='text-center'>
+                                    <div className='text-center'> 
                                         <div>
-                                            <h5>Exercises: {workoutState.setNumber}</h5>
+                                            <DirectionsRunOutlined className = 'mr-3' style = {{color: 'blue'}}/>
+                                            <h5 style = {{display: 'inline-block'}}>Exercises: {workoutState.setNumber}</h5>
                                         </div>
 
                                         <div className='mt-3'>
-                                            <h5>Workout Duration: {secondsToString(durationState.totalDurationSeconds)}</h5>
+                                            <TimerOutlined className = 'mr-3' style = {{color: 'grey'}}/>
+                                            <h5 style = {{display: 'inline-block'}}>Workout Duration: {secondsToString(durationState.totalDurationSeconds)}</h5>
                                         </div>
 
                                         <div className = 'mt-4'>
-                                            <input placeholder = 'Calories Burned' type = 'number' className = 'mr-1'/>
-                                            <button className = {classes.smallButton}>Calculate</button>
+                                            <FavoriteOutlined className = 'mr-3' style = {{color: 'red'}}/>
+                                            <input placeholder = 'Heart Rate' 
+                                                   type = 'number' 
+                                                   className='mr-1' 
+                                                   onChange={(e) => setHeartRate(parseInt(e.target.value))}/>
+                                        </div>
+
+                                        <div className = 'mt-4'>
+                                            <WhatshotOutlined className = 'mr-3' style = {{color: 'orange'}}/>
+                                            <input placeholder = 'Calories Burned' 
+                                                   type = 'number' 
+                                                   className = 'mr-1'
+                                                   value = {caloriesBurned > -1 ? caloriesBurned : ''}
+                                                   onChange={(e) => setCaloriesBurned(parseInt(e.target.value))}/>
+                                            <button className = {classes.smallButton} onClick = {getCaloriesBurned}>Calculate</button>
                                         </div>
                                     </div>
                                 </Grid>
@@ -268,13 +316,13 @@ function LiveWorkoutPage() {
                                 <Grid item xs={12} md={6} sm={12}>
                                     <div className='text-center'>
                                         <div>
-                                            <button className={classes.actionButton} style={{ background: 'gray' }} onClick={saveWorkout}>
+                                            <button className={classes.actionButton} style={{ background: '#06064a', color: 'white'}} onClick={saveWorkout}>
                                                 Save Workout
                                             </button>
                                         </div>
 
                                         <div className='mt-1'>
-                                            <button className={classes.actionButton} style={{ margin: 0, background: 'gray' }}
+                                            <button className={classes.actionButton} style={{ margin: 0, background: '#06064a', color: 'white'}}
                                                 onClick={() => window.location.reload()}>
                                                 Discard Workout
                                             </button>

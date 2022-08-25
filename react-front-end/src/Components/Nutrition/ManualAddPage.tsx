@@ -69,14 +69,14 @@ function ManualAddPage({ toggleMode }: menuProps) {
             foodName: foodData.foodName,
             calories: foodData.calories,
             carboHydrates: foodData.carboHydrates,
-            protein: foodData.protein, 
+            protein: foodData.protein,
             fat: foodData.fat
         }).then((response) => {
             if (response.success) {
                 setAlertState({ isShow: true, isSuccess: true, message: 'Added food' });
                 setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
                 setTimeout(() => {
-                    setAlertState({ ...alertState, isShow: false});
+                    setAlertState({ ...alertState, isShow: false });
                     toggleMode('menu');
                 }, 1000);
             } else {
@@ -94,8 +94,8 @@ function ManualAddPage({ toggleMode }: menuProps) {
                 Enter Food Details
             </h3>
 
-            <div className = 'mt-3'>
-                <CustomAlert alertState={alertState}/>
+            <div className='mt-3'>
+                <CustomAlert alertState={alertState} />
             </div>
 
             <form onSubmit={handleSubmit}>

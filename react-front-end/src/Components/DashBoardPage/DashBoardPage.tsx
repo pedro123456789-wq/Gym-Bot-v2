@@ -16,15 +16,13 @@ import {
 } from '@material-ui/icons';
 
 import { Chart as ChartJS, registerables } from 'chart.js';
-import { Line, Radar, Pie} from 'react-chartjs-2';
+import { Line, Radar, Pie } from 'react-chartjs-2';
 import RequestHandler from '../RequestHandler/RequestHandler';
 import { useEffect, useState } from 'react';
 import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
 
 
 ChartJS.register(...registerables)
-
-
 
 
 
@@ -97,15 +95,15 @@ const defaultExerciseData: exercises = {
   durationSeconds: 0
 }
 
-interface run{
-  distanceRan: number, 
-  durationSeconds: number, 
-  caloriesBurned: number 
+interface run {
+  distanceRan: number,
+  durationSeconds: number,
+  caloriesBurned: number
 }
 
 const defaultRunData: run = {
-  distanceRan: 0, 
-  durationSeconds: 0, 
+  distanceRan: 0,
+  durationSeconds: 0,
   caloriesBurned: 0
 }
 
@@ -263,10 +261,10 @@ function DashBoardPage() {
 
         setWorkoutData({
           ...workoutData,
-          caloriesBurned: totalCalories, 
+          caloriesBurned: totalCalories,
           durationSeconds: totalSeconds
         });
-        
+
       } else {
         alert(response.message);
       }
@@ -383,7 +381,9 @@ function DashBoardPage() {
                   <p className={classes.progressLabel}>{nutrientData.calories} / {targetData.caloriesEatenTarget}</p>
                 </div>
               </Grid>
-            </Grid><Grid container spacing={2} className={classes.gridRoot}>
+            </Grid>
+
+            <Grid container spacing={2} className={classes.gridRoot}>
               <Grid item xs={12} sm={12} md={4}>
                 <div className={classes.graphDiv}>
                   <Line
@@ -394,7 +394,7 @@ function DashBoardPage() {
 
               <Grid item xs={12} sm={12} md={4}>
                 <div>
-                  <Pie data = {pieChartData} />
+                  <Pie data={pieChartData} />
                 </div>
               </Grid>
             </Grid>

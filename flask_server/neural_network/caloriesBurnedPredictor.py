@@ -21,14 +21,14 @@ if __name__ == '__main__':
     # turn data into arrays 
     Y = np.array(caloriesFile['Calories'])
     Y = Y.reshape(Y.shape[0], 1)
-    X = np.array([[1 if row[1] == 'male' else 0, row[2], row[3], row[4], row[5]] for row in exercises])
+    X = np.array([[1 if row[1] == 'male' else 0, row[2], row[3], row[4], row[5], row[6]] for row in exercises])
     
     # normalize data 
     yScalar = DataScaler(1)
     yScalar.fitData(Y)
     Y = yScalar.transformData(Y)
     
-    xScalar = DataScaler(5)
+    xScalar = DataScaler(6)
     xScalar.fitData(X)
     X = xScalar.transformData(X)
     
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     #---------build and train neural network---------------
     network = Network()
     # input layer 
-    network.add(FCLayer(5, 10))
+    network.add(FCLayer(6, 10))
     network.add(ActivationLayer(ActivationFunctions.sigmoid, ActivationFunctions.sigmoidPrime))
     
     # hidden layer

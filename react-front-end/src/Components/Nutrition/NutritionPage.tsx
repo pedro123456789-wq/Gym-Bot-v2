@@ -3,6 +3,7 @@ import { useState } from 'react';
 import NutritionMenu from "./NutritionMenu";
 import ManualAddPage from "./ManualAddPage";
 import AddByName from "./AddByName";
+import ScanBarcode from "./ScanBarcodePage";
 
 
 function NutritionPage() {
@@ -18,9 +19,10 @@ function NutritionPage() {
                         <NutritionMenu toggleMode={toggleMode} />
                         : currentMode === 'manualAdd' ?
                             <ManualAddPage toggleMode={toggleMode} />
-                            : currentMode === 'nameAdd' ? 
+                            : currentMode === 'nameAdd' ?
                                 <AddByName toggleMode={toggleMode} />
-                                : ''
+                                : currentMode === 'scanBarcode' && 
+                                    <ScanBarcode toggleMode={toggleMode} /> 
                 }
             </div>
         </div>

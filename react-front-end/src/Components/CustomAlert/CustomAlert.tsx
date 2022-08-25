@@ -24,8 +24,6 @@ type alertProps = {
 
 
 export function CustomAlert({ alertState }: alertProps) {
-    const classes = useStyles();
-
     return (
         <div>
             {

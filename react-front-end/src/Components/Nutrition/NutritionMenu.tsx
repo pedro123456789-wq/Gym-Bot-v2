@@ -59,7 +59,7 @@ function NutritionMenu({ toggleMode }: menuProps) {
                             <CropFree />
                         </div>
 
-                        <button className={classes.actionButton}>
+                        <button className={classes.actionButton} onClick = {() => toggleMode('scanBarcode')}>
                             Add
                         </button>
                     </div>

@@ -14,25 +14,14 @@ import Targets from "./Components/Targets/Targets";
 import Workouts from "./Components/Workouts/Workouts";
 import Nutrition from "./Components/Nutrition/Nutrition";
 import Profile from "./Components/Profile/Profile";
+import Insights from "./Components/Insights/Insights";
 
 
 // TODO:
-// Add password change functionality to profile page
-// Add option to add profile photo to profile page
-// Add different inputs for email confirmation input
-
-// Make login and sign in page use material ui instead of bootstrap 
-// Work on dashboard page:
-  // Fetch data from database to fetch real daily data and display it on dashboard
-
-//Work on workout page:
-  // Add workout functionality similar to strength training in garmin watch
-
-
-//Implement add by name functionality in add food page
-//Implement scan barcode functionality
-//Implement start workout functionality
-//Implement calorie prediction functionality
+// Finish dashboard
+// Finish barcode scanning page
+// Finish insights page
+// Fix bugs and do improvements
 
 
   
@@ -53,6 +42,7 @@ function App(): JSX.Element {
           <Route path='/workouts' element={<Workouts />} />
           <Route path='/nutrition' element={<Nutrition />} />
           <Route path='/user-profile' element = {<Profile />} />
+          <Route path='/insights' element = {<Insights />} />
         </Routes>
       </div>
     </BrowserRouter>
