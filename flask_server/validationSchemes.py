@@ -1,4 +1,4 @@
-'''JSON validation schemes for API endpoints and decorators'''
+'''JSON validation schemes for body and headers of API endpoints and decorators'''
 
 
 '''/api/sign-up'''
@@ -259,6 +259,20 @@ runSchema = {
             'type': 'number'
         },
         'caloriesBurned': {
+            'type': 'number'
+        }
+    }
+}
+
+
+'''/api/calories-burned-prediction => GET'''
+caloriesBurnedSchema = {
+    'type': 'object',
+    'properties': {
+        'Duration': {
+            'type': 'number'
+        },
+        'Heartrate': {
             'type': 'number'
         }
     }

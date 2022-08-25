@@ -65,7 +65,7 @@ def loginRequired(methods=None):
             return function(*args, **kwargs)
         return decorated
     return wrapper
-
+  
 
 def hasProfile(targetUser: User):
     # check if user has set up profile
