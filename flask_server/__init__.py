@@ -15,7 +15,6 @@ NEURAL_NETWORK_PATH = 'C:/Users/pl156/Documents/schoolwork/Computer Science A-Le
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 
-
 app = Flask(__name__)
 cors = CORS(app, supports_credentials = True)
 
@@ -30,23 +29,34 @@ migrate = Migrate(app, db)
 encryptionHandler = Bcrypt()
 
 
-
-#load body fat prediction model and scalers
+# load body fat prediction model and scalers
 print('Loading Body fat prediction model ...')
-
-# TODO: Clean UP
-
-PATH = 'C:/Users/pl156\Documents/schoolwork/Computer Science A-Level/gym_bot_v2/flask_server/models/body_fat_predictor'
 sys.path.insert(0, NEURAL_NETWORK_PATH)
+MODELS_PATH = 'C:/Users/pl156/Documents/schoolwork/Computer Science A-Level/gym_bot_v2/flask_server/models/'
+
 bodyFatPredictor = Network()
-bodyFatPredictor.load(f'{PATH}/model')
+bodyFatPredictor.load(f'{MODELS_PATH}/body_fat_predictor/model')
 
 bodyFatScalerX = DataScaler(4)
-bodyFatScalerX.load(f'{PATH}/x_scaler')
+bodyFatScalerX.load(f'{MODELS_PATH}/body_fat_predictor/x_scaler')
 
 bodyFatScalerY = DataScaler(1)
-bodyFatScalerY.load(f'{PATH}/y_scaler')
-print('Loaded Body fat prediction model')
+bodyFatScalerY.load(f'{MODELS_PATH}/body_fat_predictor/y_scaler')
+print('Loaded body fat prediction model')
+
+
+# load calories burned prediction model
+print('Loading calories burned prediction model ...')
+caloriesBurnedPredictor = Network()
+caloriesBurnedPredictor.load(f'{MODELS_PATH}/calories_burned_predictor/model')
+
+caloriesBurnedScalerX = DataScaler(6)
+caloriesBurnedScalerX.load(f'{MODELS_PATH}/calories_burned_predictor/x_scaler')
+
+caloriesBurnedScalerY = DataScaler(1)
+caloriesBurnedScalerY.load(f'{MODELS_PATH}/calories_burned_predictor/y_scaler')
+print('Loaded calories burned prediction model')
+
 
 
 sys.path.insert(0, HOME_PATH)
