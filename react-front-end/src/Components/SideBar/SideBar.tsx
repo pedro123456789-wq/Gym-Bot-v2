@@ -14,7 +14,7 @@ import {
   ListItemIcon,
   Toolbar,
   useTheme,
-  Typography, 
+  Typography,  
   makeStyles
 } from '@material-ui/core';
 
@@ -24,7 +24,8 @@ import {
   Event,
   TrackChanges,
   AccountCircle, 
-  EmojiFoodBeverageOutlined
+  EmojiFoodBeverageOutlined, 
+  Highlight
 } from '@material-ui/icons';
 
 import MenuIcon from '@material-ui/icons/Menu';
@@ -54,10 +55,15 @@ const paths = [
     'name': 'Targets'
   },
   {
+    'dir': '/insights',
+    'icon': <Highlight />, 
+    'name': 'Insights'
+  }, 
+  {
     'dir': '/user-profile',
     'icon': <AccountCircle />,
     'name': 'Profile'
-  }
+  }, 
 ];
 
 
