@@ -36,9 +36,11 @@ import numpy as np
 
 
 # TODO:
-# Finish different food adding types
-# Fix email confirmation code by setting right username to local storage key
-# finish result navigation for add by name component
+# Add validation to all database inputs
+# add range validation to food endpoint values
+# add range validation to exercise endpoint values
+# add range validation to workout endpoint values 
+# add range validation to ru endpoint values
 
 
 def isSameDay(date1: datetime, date2: datetime) -> bool:
@@ -59,6 +61,13 @@ def signUp():
     try:
         validate(instance=data, schema=validationSchemes.signUpSchema)
     except exceptions.ValidationError as error:
+        field = error.path.pop()
+       
+        if field == 'password':
+            return customResponse(False, 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol and 1 capital letter')
+        elif field == 'email':
+            return customResponse(False, 'Invalid email')
+       
         return customResponse(False, error.message)
 
     username, email, password = data.get('username'), data.get('email'), data.get('password')
@@ -95,11 +104,13 @@ def signUp():
             'Gym Bot verification code',
             '\n'.join(['Thank you for signing up',
                        f'Your verification code is: {confirmationCode}',
-                       f'Verify your email at: {app.config["URL"]}/verify-email'
-                       ])
+                       '', 
+                       'Gym Bot'
+                     ])
         )
     except Exception:
         print('Internal server failure')
+        return customResponse(False, 'Internal server error')
 
     return customResponse(True, 'Account created')
 
@@ -124,7 +135,6 @@ def confirmEmail():
 
     targetUser = users[0]
     targetCode = targetUser.confirmationCode
-    print(targetCode)
     
     # check if confirmation code is correct
     if targetCode == confirmationCode:
@@ -283,7 +293,6 @@ def food():
                 startTs, endTs = datetime.strptime(
                     startDate, dateFormat), datetime.strptime(endDate, dateFormat)
         except Exception as e:
-            print(e)
             return customResponse(False, 'Invalid date format')
 
         # query food_record table (junction table) to find entries which have the user id of target user and have timestamp between start and end ts
@@ -563,12 +572,15 @@ def insights():
     except:
         return customResponse(False, 'Invalid Date format')
     
+    if startTs > endTs:
+        return customResponse(False, 'The start date must be before the end date')
+    
     interval = (endTs - startTs).days
     distancesRan, timeTrained, caloriesEaten, caloriesBurned = {}, {}, {}, {}
    
     # initialize all dicts to zeros for all dates
     # this is necessary because otherwize days in which data was not entered would not be present in the dictionaries
-    for i in range(0, interval):
+    for i in range(0, interval + 1):
         currentDate = startTs + timedelta(days = i)
         dayString = f'{currentDate.day}/{currentDate.month}/{currentDate.year}'
         distancesRan[dayString] = 0
@@ -580,7 +592,7 @@ def insights():
     foodRecords = db.session.query(food_record).filter((food_record.c.user_id == targetUser.id) &
                                                                (food_record.c.timestamp <= endTs) &
                                                                (food_record.c.timestamp >= startTs)).all()
-    workouts = Workout.query.filter((Workout.completionDate <= endTs) & (Run.completionDate >= startTs) & (Workout.userId == targetUser.id)).all()
+    workouts = Workout.query.filter((Workout.completionDate <= endTs) & (Workout.completionDate >= startTs) & (Workout.userId == targetUser.id)).all()
         
     for run in targetRuns:
         completionDate = run.completionDate
@@ -607,29 +619,34 @@ def insights():
                                                                      'caloriesEaten': caloriesEaten, 
                                                                      'caloriesBurned': caloriesBurned
                                                                     })
-        
     
     
 @app.route('/api/body-fat-prediction', methods=['GET'])
 @loginRequired(methods=['GET'])
 @profileRequired(methods=['GET'])
 def bodyFat():
-    data = request.get_json()
-
-    # check if all required headers are present
-    try:
-        validate(instance=data, schema=validationSchemes.bodyFatPredictionSchema)
-    except exceptions.ValidationError as error:
-        return customResponse(False, error.message)
-
-    # check if all headers have valid values
-    for header in list(data.keys()):
-        if header != 'token' and header != 'username':
-            if float(data[header]) < 0 or float(data[header]) > 1000:
-                return customResponse(f'The value for {header} is invalid', False)
+    data = request.headers
+    headers = [data.get('weight'), data.get('chest'), data.get('abdomen'), data.get('hip')]
+    print(headers)
+    
+    # check if headers are valid and in range
+    for i in range(0, len(headers)):
+        header = headers[i]
+        
+        try:
+            header = int(header)
+            headers[i] = header
+        except:
+            print(header)
+            return customResponse(False, f'Value for {header} must be an integer')
+        
+        if header < 0 or header > 1000:
+            return customResponse(False, f'The value for {header} is out of range')
+                    
 
     # scale inputs
-    X = np.array([list(map(float, [data.get('weight'), data.get('chest'), data.get('abdomen'), data.get('hip')]))])
+    X = np.array([list(map(float, headers))])
+    print(X)
     X = bodyFatScalerX.transformData(X)
     X = X.reshape(1, 1, 4)
 
@@ -647,7 +664,7 @@ def caloriesBurnedPrediction():
     data = request.headers
     targetUser = User.query.filter_by(username = data.get('username')).first()
     
-    duration, heartRate = data.get('duration'), data.get('heartRate')
+    duration, heartRate = float(data.get('duration')), int(data.get('heartRate'))
     
     if duration > 420 or duration < 0:
         return customResponse(False, 'Duration is out of range (0- 420)')
@@ -677,17 +694,41 @@ def caloriesBurnedPrediction():
 @profileRequired(methods = ['GET'])
 def foodData():
     data = request.headers
-    searchQuery = data.get('searchQuery')
-    resultsNumber = data.get('resultNumber')
+    queryType = data.get('queryType')
     
-    if not searchQuery or not resultsNumber:
-        return customResponse(False, 'searchQuery and resultNumber are required headers')
+    if queryType == 'barcode':
+        barcode = data.get('barcode')
+        if not barcode:
+            return customResponse(False, 'You did not provide a barcode')
+        
+        if len(barcode) > 100:
+            return customResponse(False, 'The barcode provided is too long')
+        
+        result = FoodData.searchByBarcode(barcode)
+        
+        if result:
+            return customResponse(True, 'Found item', data = result)
+        else:
+            return customResponse(False, 'No matches found for this barcode')
     
-    if len(searchQuery) > 1000:
-        return customResponse(False, 'The search query is too long')
-    
-    if int(resultsNumber) > 200:
-        return customResponse(False, 'The maximum number of results is 200')
-    
-    results = FoodData.getItems(searchQuery, resultsNumber)
-    return customResponse(True, 'Got data successfully', results = results)
+    elif queryType == 'text':
+        searchQuery = data.get('searchQuery')
+        resultsNumber = data.get('resultNumber')
+        
+        if not searchQuery or not resultsNumber:
+            return customResponse(False, 'searchQuery and resultNumber are required headers')
+        
+        if len(searchQuery) > 1000:
+            return customResponse(False, 'The search query is too long')
+        
+        if int(resultsNumber) > 200:
+            return customResponse(False, 'The maximum number of results is 200')
+        
+        results = FoodData.getItems(searchQuery, resultsNumber)
+        
+        if len(results) > 0:
+            return customResponse(True, 'Got data successfully', results = results)
+        else:
+            return customResponse(False, 'No results found')
+    else:
+        return customResponse(False, 'Invalid query type')

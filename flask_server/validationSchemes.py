@@ -14,13 +14,14 @@ signUpSchema = {
             'type': 'string',
             'minLength': 7,
             'maxLength': 40,
+            'pattern': '^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$'
         },
         'email': {
             'type': 'string',
             'minLength': 1,
-                    'maxLength': 40,
-                    # regex pattern for email validation
-                    'pattern': '[a-zA-Z0-9]*@[a-zA-Z0-9]*\.*[a-zA-Z0-9]*'
+            'maxLength': 40,
+            # regex pattern for email validation
+            'pattern': '[a-zA-Z0-9]*@[a-zA-Z0-9]*\.*[a-zA-Z0-9]*'
         }
     },
     'required': ['username', 'email', 'password']
@@ -57,7 +58,7 @@ loginSchema = {
         'password': {
             'type': 'string',
             'minLength': 1,
-            'maxLength': 40
+            'maxLength': 40, 
         }
     },
     'required': ['username', 'password']
@@ -137,17 +138,17 @@ profileBounds = {
     },
 
     'caloriesEatenTarget': {
-        'max': 100000,
+        'max': 20000,
         'min': 0
     },
 
     'caloriesBurnedTarget': {
-        'max': 100000,
+        'max': 20000,
         'min': 0
     },
 
     'minutesTrainedTarget': {
-        'max': 1224,
+        'max': 1440,
         'min': 0
     },
 
@@ -186,30 +187,6 @@ foodSchema = {
     },
 
     'required': ['foodName', 'calories', 'fat', 'carboHydrates', 'protein']
-}
-
-
-'''api/body-fat-prediction'''
-bodyFatPredictionSchema = {
-    'type': 'object',
-    'properties': {
-        'weight': {
-            'type': 'number'
-        },
-
-        'chest': {
-            'type': 'number'
-        },
-
-        'abdomen': {
-            'type': 'number'
-        },
-
-        'hip': {
-            'type': 'number'
-        }
-    },
-    'required': ['weight', 'chest', 'abdomen', 'hip']
 }
 
 
