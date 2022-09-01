@@ -18,9 +18,6 @@ import Insights from "./Components/Insights/Insights";
 
 
 // TODO:
-// Finish dashboard
-// Finish barcode scanning page
-// Finish insights page
 // Fix bugs and do improvements
 
 

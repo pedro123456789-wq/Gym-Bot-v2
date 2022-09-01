@@ -54,5 +54,14 @@ export default makeStyles(theme => ({
         borderStyle: 'solid', 
         borderRadius: theme.spacing(0.5), 
         zIndex: 1
+    }, 
+    actionButton: {
+        background: '#022669', 
+        color: 'white', 
+        borderRadius: '3vh', 
+        border: 'none', 
+        width: '50%', 
+        paddingTop: theme.spacing(0.5), 
+        paddingBottom: theme.spacing(0.5)
     }
 }));

@@ -32,9 +32,6 @@ function LoginPage() {
 
     function handleInputChange(e: any) {
         const { name, value } = e.target;
-        console.log(name);
-        console.log(value);
-
         setLoginData({ ...loginData, [name]: value });
     }
 

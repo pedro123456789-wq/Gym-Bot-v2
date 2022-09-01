@@ -6,8 +6,7 @@ import useStyles from './styles';
 import {
     SearchOutlined,
     ArrowRightOutlined,
-    ArrowLeftOutlined,
-    ArrowLeft
+    ArrowLeftOutlined
 } from '@material-ui/icons';
 import RequestHandler from '../RequestHandler/RequestHandler';
 import { FoodInfo, FoodInfoProps } from './FoodInfo';
@@ -45,6 +44,7 @@ function AddByName({ toggleMode }: menuProps) {
             {
                 username: window.localStorage.getItem('username'),
                 token: window.localStorage.getItem('sessionToken'),
+                queryType: 'text', 
                 searchQuery: searchQuery,
                 resultNumber: 30
             }
@@ -55,7 +55,8 @@ function AddByName({ toggleMode }: menuProps) {
                 setFoodData(response.results);
                 setPageNavigation({ totalPages: response.results.length / 10, currentPage: 0 });
             } else {
-                alert(response.message);
+                setAlertState({isShow: true, isSuccess: false, message: response.message});
+                setTimeout(() => setAlertState({...alertState, isShow: false}), 2000)
             }
         })
     }

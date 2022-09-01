@@ -16,60 +16,18 @@ import {
 } from '@material-ui/icons';
 
 import { Chart as ChartJS, registerables } from 'chart.js';
-import { Line, Radar, Pie } from 'react-chartjs-2';
+import { Radar, Pie } from 'react-chartjs-2';
 import RequestHandler from '../RequestHandler/RequestHandler';
 import { useEffect, useState } from 'react';
 import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
+import Badge from './Badge';
+import { useNavigate } from 'react-router-dom';
 
 
 ChartJS.register(...registerables)
 
 
 
-const lineData = {
-  labels: ['January', 'February', 'March', 'April', 'May'],
-  datasets: [
-    {
-      label: 'Distance Ran',
-      fill: true,
-      lineTension: 0.5,
-      backgroundColor: 'red',
-      borderColor: 'gray',
-      borderWidth: 2,
-      color: 'gray',
-      data: [65, 59, 80, 81, 56]
-    }
-  ]
-}
-
-
-const defaultPieChartData = {
-  labels: [
-    'Protein',
-    'Carbohydrates',
-    'Fat',
-  ],
-  datasets: [{
-    label: 'Loading Data...',
-    data: [33, 33, 33],
-    fill: true,
-    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-    borderColor: 'rgb(255, 99, 132)',
-    pointBackgroundColor: 'rgb(255, 99, 132)',
-    pointBorderColor: '#fff',
-    pointHoverBackgroundColor: '#fff',
-    pointHoverBorderColor: 'rgb(255, 99, 132)'
-  }]
-};
-
-
-const lineOptions = {
-  responsive: true,
-  maintainAspectRatio: true,
-  title: {
-    display: false,
-  },
-};
 
 interface nutrients {
   calories: number,
@@ -151,7 +109,14 @@ function DashBoardPage() {
   const [runData, setRunData] = useState<run>(defaultRunData);
   const [targetData, setTargetData] = useState<targets>(defaultTargetData);
   const [loadingStatus, setLoadingState] = useState<loadingState>(defaultLoadingState);
-  const [pieChartData, setPieChartData] = useState(defaultPieChartData);
+  const navigate = useNavigate();
+
+  function isShowBadge() {
+    return ((workoutData.caloriesBurned + runData.caloriesBurned >= targetData.caloriesBurnedTarget)
+      && (workoutData.durationSeconds + runData.durationSeconds >= targetData.minutesTrainedTarget * 60)
+      && (runData.distanceRan >= targetData.distanceRanTarget)
+      && (nutrientData.calories >= targetData.caloriesEatenTarget));
+  }
 
 
   function fetchData() {
@@ -209,28 +174,6 @@ function DashBoardPage() {
             protein: nutrientData.protein + item.protein
           });
         });
-
-        const nutrientBreakdown = {
-          labels: [
-            'Protein',
-            'Carbohydrates',
-            'Fat',
-          ],
-          datasets: [{
-            label: 'Nutrient breakdown',
-            data: [nutrientData.protein, nutrientData.carboHydrates, nutrientData.fat],
-            fill: true,
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            borderColor: 'rgb(255, 99, 132)',
-            pointBackgroundColor: 'rgb(255, 99, 132)',
-            pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: 'rgb(255, 99, 132)'
-          }]
-        };
-
-        setPieChartData(nutrientBreakdown);
-        console.log(pieChartData);
       } else {
         alert(response.message);
       }
@@ -280,15 +223,23 @@ function DashBoardPage() {
       setLoadingState({ ...loadingStatus, runs: false });
       if (response.success) {
         const runs = response.data.runs;
+        let totalDuration = 0;
+        let totalCalories = 0;
+        let totalDistance = 0;
 
         runs.forEach((run: any) => {
-          setRunData({
-            ...runData,
-            durationSeconds: runData.durationSeconds + parseInt(run.duration),
-            caloriesBurned: runData.caloriesBurned + parseInt(run.caloriesBurned),
-            distanceRan: runData.distanceRan + parseInt(run.distance)
-          });
-        })
+          totalDuration += parseInt(run.duration);
+          totalCalories += parseInt(run.caloriesBurned);
+          totalDistance += parseInt(run.distance);
+        });
+
+        setRunData({
+          ...runData,
+          durationSeconds: runData.durationSeconds + totalDuration, 
+          caloriesBurned: runData.caloriesBurned + totalCalories,
+          distanceRan: runData.distanceRan + totalDistance
+        });
+
       } else {
         alert(response.message);
       }
@@ -306,7 +257,7 @@ function DashBoardPage() {
 
       <div className={classes.content}>
         <Typography variant='h5' color='textSecondary' style={{ paddingLeft: '2vw' }}>
-          Welcome back
+          Your Day
         </Typography>
 
         {Object.values(loadingStatus).includes(true) ?
@@ -317,7 +268,12 @@ function DashBoardPage() {
           <>
             <Grid container spacing={2} className={classes.gridRoot}>
               <Grid item xs={12} sm={6} md={3}>
-                <div className={classes.dataGrid}>
+                <div className={classes.dataGrid}
+                  style={{
+                    background: (workoutData.caloriesBurned + runData.caloriesBurned) >=
+                      targetData.caloriesBurnedTarget ? '#10de4a' : '#022669'
+                  }}
+                >
                   <h5 className={classes.dataTitle}>Calories Burned</h5>
                   <Whatshot className={classes.dataIcon} style={{ color: 'red' }} />
 
@@ -325,7 +281,7 @@ function DashBoardPage() {
                     <LinearProgress
                       classes={{ root: classes.progressBarRoot, bar: classes.progressBarTop }}
                       variant="determinate"
-                      value={((workoutData.caloriesBurned + runData.caloriesBurned) / targetData.caloriesBurnedTarget) * 100} />
+                      value={Math.min(((workoutData.caloriesBurned + runData.caloriesBurned) / targetData.caloriesBurnedTarget) * 100, 100)} />
                   </div>
 
                   <p className={classes.progressLabel}>{workoutData.caloriesBurned + runData.caloriesBurned} / {targetData.caloriesBurnedTarget}</p>
@@ -334,7 +290,12 @@ function DashBoardPage() {
 
 
               <Grid item xs={12} sm={6} md={3}>
-                <div className={classes.dataGrid}>
+                <div className={classes.dataGrid}
+                  style={{
+                    background: workoutData.durationSeconds + runData.durationSeconds >=
+                      targetData.minutesTrainedTarget * 60 ? '#10de4a' : '#022669'
+                  }}
+                >
                   <h5 className={classes.dataTitle}>Minutes Trained</h5>
                   <ShutterSpeed className={classes.dataIcon} style={{ color: 'gray' }} />
 
@@ -342,7 +303,8 @@ function DashBoardPage() {
                     <LinearProgress
                       classes={{ root: classes.progressBarRoot, bar: classes.progressBarTop }}
                       variant="determinate"
-                      value={((workoutData.durationSeconds + runData.durationSeconds) / (targetData.minutesTrainedTarget * 60)) * 100} />
+                      value={Math.min(((workoutData.durationSeconds + runData.durationSeconds) / (targetData.minutesTrainedTarget * 60)) * 100, 100)}
+                    />
                   </div>
 
                   <p className={classes.progressLabel}>{Math.floor((workoutData.durationSeconds + runData.durationSeconds) / 60)} / {targetData.minutesTrainedTarget}</p>
@@ -351,7 +313,12 @@ function DashBoardPage() {
 
 
               <Grid item xs={12} sm={6} md={3}>
-                <div className={classes.dataGrid}>
+                <div className={classes.dataGrid}
+                  style={{
+                    background: runData.distanceRan >=
+                      targetData.distanceRanTarget ? '#10de4a' : '#022669'
+                  }}
+                >
                   <h5 className={classes.dataTitle}>Distance Covered</h5>
                   <DirectionsRun className={classes.dataIcon} style={{ color: '#2abedb' }} />
 
@@ -359,7 +326,7 @@ function DashBoardPage() {
                     <LinearProgress
                       classes={{ root: classes.progressBarRoot, bar: classes.progressBarTop }}
                       variant="determinate"
-                      value={(runData.distanceRan / targetData.distanceRanTarget) * 100} />
+                      value={Math.min((runData.distanceRan / targetData.distanceRanTarget) * 100, 100)} />
                   </div>
 
                   <p className={classes.progressLabel}>{runData.distanceRan} / {targetData.distanceRanTarget}</p>
@@ -367,15 +334,18 @@ function DashBoardPage() {
               </Grid>
 
               <Grid item xs={12} sm={6} md={3}>
-                <div className={classes.dataGrid}>
+                <div className={classes.dataGrid} style={{
+                  background: nutrientData.calories >=
+                    targetData.caloriesEatenTarget ? '#10de4a' : '#022669'
+                }}>
                   <h5 className={classes.dataTitle}>Calories Eaten</h5>
-                  <RestaurantMenu className={classes.dataIcon} style={{ color: '#1bf207' }} />
+                  <RestaurantMenu className={classes.dataIcon} style={{ color: '#dea410' }} />
 
                   <div>
                     <LinearProgress
                       classes={{ root: classes.progressBarRoot, bar: classes.progressBarTop }}
                       variant="determinate"
-                      value={(nutrientData.calories / targetData.caloriesEatenTarget) * 100} />
+                      value={(Math.min((nutrientData.calories / targetData.caloriesEatenTarget) * 100, 100))} />
                   </div>
 
                   <p className={classes.progressLabel}>{nutrientData.calories} / {targetData.caloriesEatenTarget}</p>
@@ -383,21 +353,105 @@ function DashBoardPage() {
               </Grid>
             </Grid>
 
-            <Grid container spacing={2} className={classes.gridRoot}>
-              <Grid item xs={12} sm={12} md={4}>
-                <div className={classes.graphDiv}>
-                  <Line
-                    data={lineData}
-                    options={lineOptions} />
+            <Grid container spacing={6} className={classes.gridRoot}>
+              <Grid item xs={12} sm={12} md={3}>
+                {/* nutrient breakdown  */}
+                <div>
+                  <h5 className='text-center'>Nutrient breakdown</h5>
+                  {(nutrientData.carboHydrates > 0 || nutrientData.protein > 0 || nutrientData.fat > 0) ?
+                    <Pie data={{
+                      labels: [
+                        'Carbohydrates (g)',
+                        'Protein (g)',
+                        'Fat (g)'
+                      ],
+                      datasets: [{
+                        label: 'Nutrients',
+                        data: [nutrientData.carboHydrates, nutrientData.protein, nutrientData.fat],
+                        backgroundColor: [
+                          'rgb(59, 208, 235)',
+                          'rgb(13, 18, 110)',
+                          'rgb(85, 11, 110)'
+                        ],
+                        hoverOffset: 4
+                      }]
+                    }} />
+                    : 
+                    <div className='text-center mt-4'>
+                      <p style={{ fontFamily: 'Verdana' }}>You have not eaten anything today</p>
+
+                      <button className={classes.actionButton} onClick={() => navigate('/nutrition')}>
+                        Add food
+                      </button>
+                    </div>
+                  }
                 </div>
               </Grid>
 
-              <Grid item xs={12} sm={12} md={4}>
-                <div>
-                  <Pie data={pieChartData} />
-                </div>
+              {/* calories burned breakdown */}
+              <Grid item xs={12} sm={12} md={5}>
+                {runData.caloriesBurned > 0 || workoutData.caloriesBurned > 0 ?
+                  <Radar data={
+                    {
+                      labels: ['Runs (calories burned)',
+                        'Workouts (calories burned)',
+                        'Calories Eaten'
+                      ],
+                      datasets: [{
+                        label: 'Caloric breakdown',
+                        data: [runData.caloriesBurned, workoutData.caloriesBurned, nutrientData.calories],
+                        fill: true,
+                        backgroundColor: 'rgba(13, 18, 110, 0.8)'
+                      }]
+                    }
+                  } />
+                  :
+                  <div className='text-center'>
+                    <h5>Caloric breakdown</h5>
+
+                    <p className='mt-4' style={{ fontFamily: 'Verdana' }}>You have not burned any active calories today</p>
+                    <button className={classes.actionButton} onClick={() => navigate('/workouts')}>
+                      Add workout
+                    </button>
+                  </div>
+                }
+              </Grid>
+
+              <Grid item xs={12} sm={12} md={3}>
+                <h5 className='text-center'>Training Breakdown</h5>
+
+                {runData.durationSeconds > 0 || workoutData.durationSeconds > 0 ?
+                  <Pie data={
+                    {
+                      labels: [
+                        'Running (minutes)',
+                        'Workouts (minutes)'
+                      ],
+                      datasets: [{
+                        label: 'Training Breakdown',
+                        data: [Math.floor(runData.durationSeconds / 60), Math.floor(workoutData.durationSeconds / 60)],
+                        backgroundColor: [
+                          'rgb(59, 208, 235)',
+                          'rgb(13, 18, 110)',
+                        ],
+                        hoverOffset: 4
+                      }]
+                    }
+                  } />
+                  : 
+                  <div className='text-center mt-4'>
+                    <p style={{ fontFamily: 'Verdana' }}>You have not trained yet today</p>
+
+                    <button className={classes.actionButton} onClick={() => navigate('/workouts')}>
+                      Do Workout
+                    </button>
+                  </div>}
               </Grid>
             </Grid>
+
+            {isShowBadge() &&
+              <Badge />
+            }
           </>
         }
       </div>
