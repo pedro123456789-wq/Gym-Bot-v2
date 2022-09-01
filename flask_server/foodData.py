@@ -29,7 +29,7 @@ class FoodData:
         foods = response['foods']
         output = []
 
-        if len(foods) > 1:
+        if len(foods) > 0:
             for food in foods:
                 foodName = food.get('lowercaseDescription')
                 brand = food.get('brandName')
@@ -70,7 +70,7 @@ class FoodData:
 
             return output
         else:
-            return 'No results found'
+            return []
         
     def searchByBarcode(barcode: str):
         """Uses openfoodfacts api to get information about food item through its barcode
@@ -99,9 +99,13 @@ class FoodData:
             responseData = response.json()
             output = {}
             
-            nutrients = responseData['product']['nutriments']
-            servingSize = responseData['product']['nutrition_data_per']
-            productName = responseData['product']['product_name']
+            try:
+                # if not products are found a long, meaningless dictionary is returned so the attempt to access the product key will fail
+                nutrients = responseData['product']['nutriments']
+                servingSize = responseData['product']['nutrition_data_per']
+                productName = responseData['product']['product_name']
+            except Exception:
+                return None
             
             output = {
                         'foodName': productName, 
@@ -120,5 +124,5 @@ class FoodData:
 
 
 if __name__ == '__main__':
-    print(FoodData.getItems('Tuna'))
-    print(FoodData.searchByBarcode('8711000363768'))
+    print(FoodData.getItems('wjadbqjwdbqwdjqhbwdqjhbdwqjhwdbj'))
+    # print(FoodData.searchByBarcode('8711'))
