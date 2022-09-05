@@ -10,6 +10,7 @@ import RequestHandler from "../RequestHandler/RequestHandler";
 import useStyles from './styles';
 import { menuProps } from './Workouts';
 import { alertType, defaultAlertState, CustomAlert } from '../CustomAlert/CustomAlert';
+import BackButton from '../BackButton/BackButton';
 
 
 
@@ -176,6 +177,8 @@ function AddWorkout({ toggleMode }: menuProps) {
 
     return (
         <div className={classes.content}>
+            <BackButton callBack={() => toggleMode('menu')} />
+
             <h3 className='text-center pb-5'>
                 Add Workout
             </h3>

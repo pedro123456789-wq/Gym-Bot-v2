@@ -10,10 +10,12 @@ import {
 } from '@material-ui/icons';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BackButton from '../BackButton/BackButton';
 import { alertType, CustomAlert, defaultAlertState } from '../CustomAlert/CustomAlert';
 import { apiUrl } from '../GlobalVariables';
 import RequestHandler from '../RequestHandler/RequestHandler';
 import useStyles from './styles';
+import { menuProps } from './Workouts';
 
 
 interface WorkoutState {
@@ -52,7 +54,7 @@ interface Exercise {
 }
 
 
-function LiveWorkoutPage() {
+function LiveWorkoutPage({toggleMode}: menuProps) {
     const classes = useStyles();
     //split into two different states because updating same state from two different functions causes problems
     const [workoutState, setWorkoutState] = useState<WorkoutState>(defaultWorkoutState);
@@ -198,6 +200,10 @@ function LiveWorkoutPage() {
     return (
         <div>
             <CustomAlert alertState={alertState} />
+
+            {!workoutState.hasStarted && 
+                <BackButton callBack={() => toggleMode('menu')} />
+            }
 
             <div className={classes.content} style={{ 'marginTop': '15vh' }}>
                 <h3 className='text-center'>

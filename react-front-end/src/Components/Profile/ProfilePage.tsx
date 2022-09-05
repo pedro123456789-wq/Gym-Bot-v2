@@ -16,7 +16,7 @@ interface profile {
     weight: number | null,
     vo2Max: number | null,
     age: number | null,
-    gender: number | null,
+    gender: string | number,
 }
 
 
@@ -25,7 +25,7 @@ let defaultProfileValues: profile = {
     weight: null,
     vo2Max: null,
     age: null,
-    gender: null
+    gender: ''
 }
 
 function ProfilePage() {
@@ -55,7 +55,7 @@ function ProfilePage() {
                     height: data.height,
                     weight: data.weight,
                     vo2Max: data.vo2Max,
-                    gender: data.gender,
+                    gender: data.gender == 1 ? 'Male' : 'Female',
                     age: data.age
                 }
 
@@ -88,6 +88,8 @@ function ProfilePage() {
         }
 
         toggleLoad(true);
+        let gender = profileValues.gender == 'Male' ? 1 : 0;
+        profileValues.gender = gender;
 
         RequestHandler.PUT('profile', {
             ...profileValues, 

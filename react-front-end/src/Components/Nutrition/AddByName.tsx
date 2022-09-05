@@ -11,6 +11,7 @@ import {
 import RequestHandler from '../RequestHandler/RequestHandler';
 import { FoodInfo, FoodInfoProps } from './FoodInfo';
 import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
+import BackButton from '../BackButton/BackButton';
 
 
 // Fetch all of the food items at once and store them in the local state then display them page by page
@@ -33,7 +34,6 @@ function AddByName({ toggleMode }: menuProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [foodData, setFoodData] = useState<FoodInfoProps[]>([]);
     const [isLoading, setLoading] = useState<boolean>(false);
-    const [selectedIndex, setSelectedIndex] = useState(1);
     const [pageNavigation, setPageNavigation] = useState<pageNavigationType>(defaultNavigationState);
 
     function getFoods() {
@@ -63,6 +63,7 @@ function AddByName({ toggleMode }: menuProps) {
 
     return (
         <div className={classes.content}>
+            <BackButton callBack={() => toggleMode('menu')} />
     
             <h3 className='text-center'>
                 Food Search

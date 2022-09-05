@@ -6,6 +6,7 @@ import useStyles from './styles';
 import { cammelCaseToText } from '../GlobalVariables';
 import RequestHandler from '../RequestHandler/RequestHandler';
 import { alertType, defaultAlertState, CustomAlert } from '../CustomAlert/CustomAlert';
+import BackButton from '../BackButton/BackButton';
 
 
 interface foodItem {
@@ -90,6 +91,8 @@ function ManualAddPage({ toggleMode }: menuProps) {
 
     return (
         <div className={classes.content}>
+            <BackButton callBack={() => toggleMode('menu')} />
+
             <h3 className='text-center'>
                 Enter Food Details
             </h3>

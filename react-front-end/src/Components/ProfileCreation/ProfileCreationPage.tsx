@@ -60,8 +60,6 @@ function ProfileCreationPage() {
 
         // merge profile and targets dictionary
         const requestPayload = Object.assign({ username: userName, token: token }, profileData, targetData)
-        console.log(targetData);
-        console.log(profileData);
 
         RequestHandler.POST('profile', requestPayload).then((response) => {
             if (response.success) {
@@ -230,7 +228,7 @@ function ProfileCreationPage() {
                         <TextField
                             id='distanceRanTarget'
                             name='distanceRanTarget'
-                            label='Distance Ran Target'
+                            label='Distance Ran Target (Km)'
                             type={'number'}
                             onChange={handleTargetsInput}
                             margin='normal'

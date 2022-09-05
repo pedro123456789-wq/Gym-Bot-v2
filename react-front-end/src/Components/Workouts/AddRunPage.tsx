@@ -7,6 +7,7 @@ import RequestHandler from '../RequestHandler/RequestHandler';
 import useStyles from './styles';
 import { menuProps } from './Workouts';
 import { alertType, defaultAlertState, CustomAlert } from '../CustomAlert/CustomAlert'
+import BackButton from '../BackButton/BackButton';
 
 
 
@@ -39,7 +40,7 @@ function AddRunPage({ toggleMode }: menuProps) {
 
     const handleInputChange = (e: any) => {
         let { name, value } = e.target;
-        value = parseInt(value);
+        value = parseFloat(value);
 
         setFormValues({
             ...formValues,
@@ -67,7 +68,8 @@ function AddRunPage({ toggleMode }: menuProps) {
         RequestHandler.POST('runs', {
             'username': localStorage.getItem('username'),
             'token': localStorage.getItem('sessionToken'),
-            'distance': formValues.distance,
+            // @ts-ignore
+            'distance': formValues.distance * 1000, //value cannot be null due to check for empty fields
             'caloriesBurned': formValues.caloriesBurned,
             'durationSeconds': durationSeconds
         }
@@ -88,86 +90,92 @@ function AddRunPage({ toggleMode }: menuProps) {
     };
 
     return (
-        <div className={classes.content}>
-            <div>
-                <h3 className='text-center pb-5'>
-                    Add Run
-                </h3>
+        <div>
+            <BackButton callBack={() => toggleMode('menu')}/>
 
-                <div className='mt-3'>
-                    <CustomAlert alertState={alertState} />
+            <div className={classes.content}>
+                <div>
+                    <h3 className='text-center pb-5'>
+                        Add Run
+                    </h3>
+
+                    <div className='mt-3'>
+                        <CustomAlert alertState={alertState} />
+                    </div>
+
+                    <form onSubmit={handleSubmit}>
+                        <Grid container alignItems='center' justify='center' direction='column' spacing={5}>
+                            <Grid item>
+                                <TextField
+                                    id='distance-ran'
+                                    name='distance'
+                                    label='Distance Ran (Km)'
+                                    type='number'
+                                    onChange={handleInputChange}
+                                    margin='normal'
+                                    inputProps={{
+                                        step: 0.01
+                                    }}
+                                    fullWidth
+                                />
+                            </Grid>
+
+                            <Grid item>
+                                <TextField
+                                    id='calories-burned'
+                                    name='caloriesBurned'
+                                    label='Calories Burned'
+                                    type='number'
+                                    value={formValues.caloriesBurned}
+                                    onChange={handleInputChange}
+                                    margin='normal'
+                                    fullWidth
+                                />
+                            </Grid>
+
+                            <Grid item>
+                                <p className={classes.inputLabel}>Time</p>
+
+                                <input type='number'
+                                    style={{ 'maxWidth': '2rem' }}
+                                    min={0}
+                                    max={999}
+                                    placeholder='H'
+                                    name='hours'
+                                    onChange={handleInputChange}>
+                                </input>
+                                <label className='ml-2 mr-2'>:</label>
+
+                                <input type='number'
+                                    style={{ 'maxWidth': '2rem' }}
+                                    min={0}
+                                    max={60}
+                                    placeholder='M'
+                                    name='minutes'
+                                    onChange={handleInputChange}>
+                                </input>
+                                <label className='ml-2 mr-2'>:</label>
+
+                                <input type='number'
+                                    style={{ 'maxWidth': '2rem' }}
+                                    min={0}
+                                    max={60}
+                                    placeholder='S'
+                                    name='seconds'
+                                    onChange={handleInputChange}>
+                                </input>
+                            </Grid>
+
+                            <Grid item>
+                                <input className={classes.actionButton}
+                                    style={{ background: '#022669', color: 'white' }}
+                                    type='submit'
+                                    value='Save Run'>
+                                </input>
+                            </Grid>
+                        </Grid>
+                    </form>
                 </div>
-
-                <form onSubmit={handleSubmit}>
-                    <Grid container alignItems='center' justify='center' direction='column' spacing={5}>
-                        <Grid item>
-                            <TextField
-                                id='distance-ran'
-                                name='distance'
-                                label='Distance Ran'
-                                type='number'
-                                value={formValues.distance}
-                                onChange={handleInputChange}
-                                margin='normal'
-                                fullWidth
-                            />
-                        </Grid>
-
-                        <Grid item>
-                            <TextField
-                                id='calories-burned'
-                                name='caloriesBurned'
-                                label='Calories Burned'
-                                type='number'
-                                value={formValues.caloriesBurned}
-                                onChange={handleInputChange}
-                                margin='normal'
-                                fullWidth
-                            />
-                        </Grid>
-
-                        <Grid item>
-                            <p className={classes.inputLabel}>Time</p>
-
-                            <input type='number'
-                                style={{ 'maxWidth': '2rem' }}
-                                min={0}
-                                max={999}
-                                placeholder='H'
-                                name='hours'
-                                onChange={handleInputChange}>
-                            </input>
-                            <label className='ml-2 mr-2'>:</label>
-
-                            <input type='number'
-                                style={{ 'maxWidth': '2rem' }}
-                                min={0}
-                                max={60}
-                                placeholder='M'
-                                name='minutes'
-                                onChange={handleInputChange}>
-                            </input>
-                            <label className='ml-2 mr-2'>:</label>
-
-                            <input type='number'
-                                style={{ 'maxWidth': '2rem' }}
-                                min={0}
-                                max={60}
-                                placeholder='S'
-                                name='seconds'
-                                onChange={handleInputChange}>
-                            </input>
-                        </Grid>
-
-                        <Grid item>
-                            <input className={classes.actionButton}
-                                style={{ background: '#022669', color: 'white' }}
-                                type='submit'
-                                value='Save Run'>
-                            </input>
-                        </Grid>
-                    </Grid>
-                </form>
             </div>
         </div>
     );

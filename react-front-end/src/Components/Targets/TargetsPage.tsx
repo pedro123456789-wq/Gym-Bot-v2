@@ -1,7 +1,6 @@
 import { Grid, TextField } from "@material-ui/core";
 import { EditSharp, DoneSharp } from "@material-ui/icons";
 import { useEffect, useState } from "react";
-import { classicNameResolver } from "typescript";
 import { CustomAlert, alertType, defaultAlertState } from "../CustomAlert/CustomAlert";
 import { cammelCaseToText } from "../GlobalVariables";
 import LoadingIndicator from "../LoadingIndicator/LoadingIndicator";
@@ -35,7 +34,7 @@ function TargetsPage() {
 
     function handleInputChange(e: any) {
         console.log(e.target);
-        let {name, value} = e.target;
+        let { name, value } = e.target;
 
         if (value === 0) {
             value = null;
@@ -43,7 +42,7 @@ function TargetsPage() {
 
         setTargetValues({
             ...targetValues,
-            [name]: parseInt(value)
+            [name]: parseFloat(value)
         });
     }
 
@@ -58,7 +57,7 @@ function TargetsPage() {
                 setTargetValues({
                     caloriesEatenTarget: parseInt(responseData.caloriesEatenTarget),
                     caloriesBurnedTarget: parseInt(responseData.caloriesBurnedTarget),
-                    distanceRanTarget: parseInt(responseData.distanceRanTarget),
+                    distanceRanTarget: parseFloat(responseData.distanceRanTarget),
                     minutesTrainedTarget: parseInt(responseData.minutesTrainedTarget)
                 });
                 toggleLoad(true);
@@ -81,12 +80,19 @@ function TargetsPage() {
                 return -1;
             }
         }
+        
+        // it is known that values are not null due to null check above
+        // @ts-ignore
+        targetValues.distanceRanTarget = (Math.round((targetValues.distanceRanTarget + Number.EPSILON) * 100) / 100) * 1000 //convert from Km to m after rounding to 2dp
 
         RequestHandler.PUT('profile', {
-            ...targetValues, 
-            username: window.localStorage.getItem('username'), 
+            ...targetValues,
+            username: window.localStorage.getItem('username'),
             token: window.localStorage.getItem('sessionToken')
         }).then(response => {
+            // @ts-ignore
+            targetValues.distanceRanTarget = targetValues.distanceRanTarget / 1000;
+
             if (response.success) {
                 setAlertState({ isShow: true, isSuccess: true, message: 'Changes Saved' });
                 setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
@@ -112,8 +118,8 @@ function TargetsPage() {
                 <h3 className='text-center'>
                     Targets
                 </h3>
-                
-                <div className = 'pt-3'>
+
+                <div className='pt-3'>
                     <CustomAlert alertState={alertState} />
                 </div>
 
@@ -126,18 +132,22 @@ function TargetsPage() {
                                         <TextField
                                             id={key}
                                             name={key}
-                                            label={cammelCaseToText(key)}
+                                            label={key != 'distanceRanTarget' ? cammelCaseToText(key) : cammelCaseToText(key) + " (km)"}
                                             type='number'
                                             value={value}
                                             onChange={handleInputChange}
                                             margin='normal'
                                             disabled={!canEdit}
                                             className={classes.disabledInput}
+                                            inputProps = {{
+                                                step: key == 'distanceRanTarget' ? 0.01 : 1
+                                            }}
                                             fullWidth
                                         />
                                     </Grid>
                                 )
                             })
+
 
                             : <LoadingIndicator />
                         }
@@ -147,7 +157,7 @@ function TargetsPage() {
                 <Grid container direction='row' alignItems='center' justify='center' spacing={2}>
                     {canEdit ?
                         <Grid item>
-                            <button className={classes.actionButton} style={{ color: 'green' }} onClick = {() => saveChages()}>
+                            <button className={classes.actionButton} style={{ color: 'green' }} onClick={() => saveChages()}>
                                 <DoneSharp className={classes.actionIcon} />
                             </button>
                         </Grid>

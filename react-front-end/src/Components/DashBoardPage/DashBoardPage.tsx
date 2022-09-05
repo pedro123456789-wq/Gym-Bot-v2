@@ -137,7 +137,7 @@ function DashBoardPage() {
         setTargetData({
           caloriesEatenTarget: parseInt(responseData.caloriesEatenTarget),
           caloriesBurnedTarget: parseInt(responseData.caloriesBurnedTarget),
-          distanceRanTarget: parseInt(responseData.distanceRanTarget),
+          distanceRanTarget: parseFloat(responseData.distanceRanTarget),
           minutesTrainedTarget: parseInt(responseData.minutesTrainedTarget)
         });
       } else {
@@ -230,7 +230,7 @@ function DashBoardPage() {
         runs.forEach((run: any) => {
           totalDuration += parseInt(run.duration);
           totalCalories += parseInt(run.caloriesBurned);
-          totalDistance += parseInt(run.distance);
+          totalDistance += parseFloat(run.distance);
         });
 
         setRunData({
@@ -319,7 +319,7 @@ function DashBoardPage() {
                       targetData.distanceRanTarget ? '#10de4a' : '#022669'
                   }}
                 >
-                  <h5 className={classes.dataTitle}>Distance Covered</h5>
+                  <h5 className={classes.dataTitle}>Distance Covered (Km)</h5>
                   <DirectionsRun className={classes.dataIcon} style={{ color: '#2abedb' }} />
 
                   <div>

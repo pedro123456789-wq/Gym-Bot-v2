@@ -18,6 +18,7 @@ import { TransitionProps } from '@material-ui/core/transitions';
 
 import { Chart as ChartJS, registerables } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
+import BackButton from '../BackButton/BackButton';
 ChartJS.register(...registerables);
 
 
@@ -120,6 +121,7 @@ function ScanBarcode({ toggleMode }: menuProps) {
 
     return (
         <div className={classes.content}>
+            <BackButton callBack={() => toggleMode('menu')} />
             <CustomAlert alertState = {alertState} />
 
             <h3 className='text-center'>Scan Barcode</h3>
