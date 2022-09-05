@@ -36,7 +36,7 @@ class User(db.Model):
     caloriesEatenTarget = db.Column(db.Integer, unique = False, nullable = True)
     caloriesBurnedTarget = db.Column(db.Integer, unique = False, nullable = True)
     minutesTrainedTarget = db.Column(db.Integer, unique = False, nullable = True)
-    distanceRanTarget = db.Column(db.Integer, unique = False, nullable = True)
+    distanceRanTarget = db.Column(db.Integer, unique = False, nullable = True) #measured in metres
 
     #fitness data - one to one relationship
     height = db.Column(db.Integer, unique = False, nullable = True)
@@ -102,7 +102,7 @@ class Run(db.Model):
     __tablename__ = 'run'
     
     id = db.Column(db.Integer, primary_key = True)
-    distance = db.Column(db.Integer, nullable = False, unique = False)
+    distance = db.Column(db.Float, nullable = False, unique = False) #measured in metres
     durationSeconds = db.Column(db.Integer, nullable = False, unique = False)
     caloriesBurned = db.Column(db.Integer, nullable = True, unique = False)
     completionDate = db.Column(db.DateTime, nullable = False, default = datetime.utcnow)

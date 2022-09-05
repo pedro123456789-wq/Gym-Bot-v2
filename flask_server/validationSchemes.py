@@ -153,7 +153,7 @@ profileBounds = {
     },
 
     'distanceRanTarget': {
-        'max': 500,
+        'max': 500000,
         'min': 0
     }
 }

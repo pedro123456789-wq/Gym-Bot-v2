@@ -42,10 +42,13 @@ import numpy as np
 # add range validation to workout endpoint values 
 # add range validation to ru endpoint values
 
+# Show correct vo2 max and workouts completed on workouts page
+# Make insights page more responsive and fix glitch with last day
+
+
 
 def isSameDay(date1: datetime, date2: datetime) -> bool:
     return date1.day == date2.day and date1.month == date2.month and date1.year == date2.year
-
 
 
 @app.route('/api', methods=['GET'])
@@ -217,6 +220,7 @@ def profile():
         # get class attributes from target user and return them in a dictionary
         output = vars(targetUser)
         output.pop('_sa_instance_state')
+        output['distanceRanTarget'] = output['distanceRanTarget'] / 1000 #convert distance to km
 
         return customResponse(True, 'Fetched Data Successfully', data=output)
 
@@ -255,6 +259,8 @@ def profile():
                 if data[header] > headerBounds[header]['max'] or data[header] < headerBounds[header]['min']:
                     return customResponse(False, f'Value for {header} is not valid')
 
+        
+        
         # only set new values if all values provided are valid
         # this has impact on performance but ensures that transactions are atomic
         for header in list(data.keys()):
@@ -499,24 +505,27 @@ def runs():
         targetUser = User.query.filter_by(username=request.headers.get('username')).first()
         startDate = request.headers.get('startDate')
         endDate = request.headers.get('endDate')
+        
+        if startDate == 'ALL' and endDate == 'ALL':
+            targetRuns = Run.query.all()
+        else:
+            try:
+                dateFormat = '%d/%m/%Y'
+                
+                if endDate == '+1':
+                    startTs = datetime.strptime(startDate, dateFormat)
+                    endTs = startTs + timedelta(days=1)
+                else:
+                    startTs, endTs = datetime.strptime(startDate, dateFormat), datetime.strptime(endDate, dateFormat)
+            except:
+                return customResponse(False, 'Invalid Date format')
 
-        try:
-            dateFormat = '%d/%m/%Y'
-            
-            if endDate == '+1':
-                startTs = datetime.strptime(startDate, dateFormat)
-                endTs = startTs + timedelta(days=1)
-            else:
-                startTs, endTs = datetime.strptime(startDate, dateFormat), datetime.strptime(endDate, dateFormat)
-        except:
-            return customResponse(False, 'Invalid Date format')
-
-        targetRuns = Run.query.filter((Run.completionDate <= endTs) & (Run.completionDate >= startTs) & (Run.userId == targetUser.id)).all()
+            targetRuns = Run.query.filter((Run.completionDate <= endTs) & (Run.completionDate >= startTs) & (Run.userId == targetUser.id)).all()
         
         outputDict = {
             'runNumber': len(targetRuns),
             'runs': [{
-                'distance': run.distance,
+                'distance': run.distance / 1000,
                 'duration': run.durationSeconds,
                 'caloriesBurned': run.caloriesBurned,
                 'completionDate': run.completionDate.strftime(dateFormat)
@@ -597,7 +606,7 @@ def insights():
     for run in targetRuns:
         completionDate = run.completionDate
         dayString = f'{completionDate.day}/{completionDate.month}/{completionDate.year}'
-        distancesRan[dayString] += run.distance
+        distancesRan[dayString] += run.distance / 1000
         timeTrained[dayString] += run.durationSeconds / 60
         caloriesBurned[dayString] += run.caloriesBurned
     
