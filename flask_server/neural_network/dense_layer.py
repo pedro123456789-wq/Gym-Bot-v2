@@ -1,12 +1,12 @@
-'''Fully Connected Layer'''
+'''Dense Layer'''
 from layer import Layer
 from matrix import Matrix
 from vector import Vector
 
-class FCLayer(Layer):
+class DenseLayer(Layer):
     def __init__(self, inputSize, outputSize):
         #generate matrix with random numbers for initial weights
-        self.weights = Matrix(inputSize, outputSize)
+        self.weights = Matrix(outputSize, inputSize)
         self.weights.randomInit()
 
         self.bias = Vector(outputSize)
@@ -19,10 +19,10 @@ class FCLayer(Layer):
 
         return self.output
 
-    def backPropagate(self, outputError, learningRate):
+    def backPropagate(self, outputError: 'Vector', learningRate: int):
         #partial derivative of error with respect to input
-        inputError = np.dot(outputError, self.weights.T)
-
+        inputError = weights.transpose().multiply(outputError)
+        weights = 
         #partial derivative of input with respect to weights
         weightsError = np.dot(self.input.T, outputError)
 
@@ -36,6 +36,8 @@ class FCLayer(Layer):
 
 
 if __name__ == '__main__':
-    
-    layer = FCLayer()
+    layer = DenseLayer(1, 3)
+    print(layer.weights)
+    print(layer.bias)
+    # print(layer.forwardPropagate(Vector(1, [0.4])))
     
