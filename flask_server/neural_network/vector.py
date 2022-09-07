@@ -2,15 +2,16 @@ from random import random
 
 
 class Vector:
-    def __init__(self, data: list = None, dimensions: int = None):
+    def __init__(self, dimensions: int = None, data: list = None):
         if data == None:
             if dimensions:
-                self.data = [0 for _ in range(self.dimensions)]
+                self.data = [0 for _ in range(dimensions)]
+                self.dimensions = dimensions
             else:
                 raise ValueError('You must enter a value for the vector dimensions')
         else:
             self.data = data
-        self.dimension = len(self.data)
+            self.dimensions = len(self.data)
 
 
     def randomInit(self):
@@ -32,6 +33,12 @@ class Vector:
     def dot(self, other: 'Vector') -> 'Vector':
         if type(other) == Vector:
             return sum([e1 * e2 for e1, e2 in zip(self.data, other.data)])
+        else:
+            return -1
+
+    def hadamardProduct(self, other: 'Vector') -> 'Vector':
+        if type(other) == Vector:
+            return Vector([e1 * e2 for e1, e2 in zip(self.data, other.data)])
         else:
             return -1
         
