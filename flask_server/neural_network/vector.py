@@ -1,7 +1,21 @@
+from random import random
+
+
 class Vector:
-    def __init__(self, data: list):
-        self.data = data
+    def __init__(self, data: list = None, dimensions: int = None):
+        if data == None:
+            if dimensions:
+                self.data = [0 for _ in range(self.dimensions)]
+            else:
+                raise ValueError('You must enter a value for the vector dimensions')
+        else:
+            self.data = data
         self.dimension = len(self.data)
+
+
+    def randomInit(self):
+        for i in range(0, self.dimensions):
+            self.data[i] = random()
 
     def __add__(self, other: 'Vector') -> 'Vector':
         if type(other) == Vector:

@@ -1,17 +1,21 @@
 '''Fully Connected Layer'''
 from layer import Layer
-import numpy as np
+from matrix import Matrix
+from vector import Vector
 
 class FCLayer(Layer):
     def __init__(self, inputSize, outputSize):
         #generate matrix with random numbers for initial weights
-        self.weights = np.random.rand(inputSize, outputSize) - 0.5 
-        self.bias = np.random.rand(1, outputSize) - 0.5 #bias vector
+        self.weights = Matrix(inputSize, outputSize)
+        self.weights.randomInit()
 
-    def forwardPropagate(self, input):
+        self.bias = Vector(outputSize)
+        self.bias.randomInit()
+
+    def forwardPropagate(self, input: Vector):
         self.input = input
         #add product of inputs with heights plus the bias for each neuron
-        self.output = np.dot(self.input, self.weights) + self.bias
+        self.output = self.weights.multiply(input) + self.bias
 
         return self.output
 

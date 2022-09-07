@@ -1,20 +1,32 @@
-from vector import Vector
+from random import random
+
+
 
 class Matrix:
-    def __init__(self, rows: int, cols: int, data: list):
+    def __init__(self, rows: int, cols: int, data: list = None):
         if len(data) != rows:
             raise ValueError('The number of rows is invalid')
         
         for row in data:
             if len(row) != cols:
                 raise ValueError('The number of columns is invalid')
-            
-        self.data = data
+
+        if data == None:
+            self.data = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
+        else:
+            self.data = data
         self.rows = rows
         self.cols = cols
+
+
+    def randomInit(self):
+        for i in range(0, self.rows):
+            for x in range(0, self.cols):
+                self.data[i][x] = random()
+
         
         
-    def times(self, vector: Vector) -> Vector:
+    def multiply(self, vector: Vector) -> Vector:
         if self.cols != len(vector):
             raise ValueError('Invalid operation for matrix and vector of these sizes')
         output = [0 for _ in range(len(vector))] 
@@ -46,6 +58,7 @@ class Matrix:
 if __name__ == '__main__':
     v1 = Vector([1, 2, 3])
     m1 = Matrix(3, 3, [[3, 4, 5], [4, 5, 6], [7, 8, 9]])
+
     
     
         
