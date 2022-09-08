@@ -1,7 +1,7 @@
 '''Dense Layer'''
 from layer import Layer
 from matrix import Matrix
-from vector import Vector
+
 
 class DenseLayer(Layer):
     def __init__(self, inputSize, outputSize):
@@ -9,26 +9,24 @@ class DenseLayer(Layer):
         self.weights = Matrix(outputSize, inputSize)
         self.weights.randomInit()
 
-        self.bias = Vector(outputSize)
+        self.bias = Matrix(outputSize, 1)
         self.bias.randomInit()
 
-    def forwardPropagate(self, input: Vector):
-        self.input = input
+    def forwardPropagate(self, inp: Matrix):
+        self.input = inp
         #add product of inputs with heights plus the bias for each neuron
-        self.output = self.weights.multiply(input) + self.bias
+        self.output = (self.weights * inp) + self.bias
 
         return self.output
 
-    def backPropagate(self, outputError: 'Vector', learningRate: int):
+    def backPropagate(self, outputError: Matrix, learningRate: int):
         #partial derivative of error with respect to input
-        inputError = weights.transpose().multiply(outputError)
-        weights = 
-        #partial derivative of input with respect to weights
-        weightsError = np.dot(self.input.T, outputError)
+        dEbydW = self.input.transpose() * outputError
+        inputError = self.weights.transpose() * outputError
 
         #gradient descent to update weights and biases based on error
-        self.weights -= learningRate * weightsError
-        self.bias -= learningRate * outputError
+        self.weights -= (dEbydW * learningRate)
+        self.bias -= (outputError * learningRate)
 
         return inputError
         
