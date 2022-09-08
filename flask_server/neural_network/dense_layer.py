@@ -21,8 +21,12 @@ class DenseLayer(Layer):
 
     def backPropagate(self, outputError: Matrix, learningRate: int):
         #partial derivative of error with respect to input
-        dEbydW = self.input.transpose() * outputError
-        inputError = self.weights.transpose() * outputError
+        if outputError.cols == 1 and outputError.rows == 1:
+            dEbydW = self.input.transpose() * outputError.data[0][0]
+            inputError = outputError * self.weights.data[0][0]
+        else:
+            dEbydW = self.input.transpose() * outputError.transpose()
+            inputError = outputError * self.weights.transpose()
 
         #gradient descent to update weights and biases based on error
         self.weights -= (dEbydW * learningRate)

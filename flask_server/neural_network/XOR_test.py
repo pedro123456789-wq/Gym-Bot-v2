@@ -10,7 +10,7 @@ import numpy as np
 
 if __name__ == '__main__':
     xTrain = [[0, 0], [0, 1], [1, 0], [1, 1]]
-    yTrain = [[0], [1], [1], [0]]
+    yTrain = [0, 1, 1, 0]
 
     network = Network()
     network.add(DenseLayer(2, 3))
