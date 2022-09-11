@@ -33,4 +33,4 @@ class ActivationLayer(Layer):
                 output[i][x] = self.activationDerivative(output[i][x])
         
         output = Matrix(self.inputData.rows, self.inputData.cols, output)
-        return output * outputError
+        return outputError.hadamardProduct(output)

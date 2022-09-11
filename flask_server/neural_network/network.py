@@ -1,7 +1,7 @@
 '''Neural Network'''
 from time import time
 from pickle import dump, load
-from matrix import Matrix
+from flask_server.neural_network.matrix import Matrix
 
 
 
@@ -33,22 +33,21 @@ class Network:
             for sampleIndex in range(samples):
                 #forward propagtion
                 #for each sample, input it to the input layer and computer its output at the output layer
-                output = xTrain[sampleIndex]
-                output = Matrix(len(output), 1, [[e] for e in output])
+                inputData = xTrain[sampleIndex]
+                inputData = Matrix(1, len(inputData), [inputData])
 
                 for layer in self.layers:
-                    output = layer.forwardPropagate(output)
+                    inputData = layer.forwardPropagate(inputData)
                 
                 #compute error by comparing output of network with correct value in the training dataset
-                error += self.loss(yTrain[sampleIndex], output.data[0][0])
+                error += self.loss(yTrain[sampleIndex], inputData.data[0][0])
 
                 #back propagation to update weights after computing error
                 #start with error at output layer and work backwards to obtain error at the input layer
-                errorPrime = Matrix(1, 1, [[self.lossPrime(yTrain[sampleIndex], output.data[0][0])]])
+                dEbydX = Matrix(1, 1, [[self.lossPrime(yTrain[sampleIndex], inputData.data[0][0])]])
 
                 for layer in self.layers[::-1]:
-                    print(errorPrime)
-                    errorPrime = layer.backPropagate(errorPrime, learningRate)
+                    dEbydX = layer.backPropagate(dEbydX, learningRate)
 
             meanError = error / samples
             duration = time() - epochStart
@@ -63,8 +62,9 @@ class Network:
             print(f'Error: {meanError} \n Execution Time: {totalTime}')
 
 
-    def predict(self, inputData):
+    def predict(self, inputData: list):
         outputs = []
+        inputData = [Matrix(1, len(dataPoint), [dataPoint]) for dataPoint in inputData]
 
         #forward propagate all inputs
         for i in range(0, len(inputData)):
@@ -73,7 +73,7 @@ class Network:
             for layer in self.layers:
                 output = layer.forwardPropagate(output)
             
-            outputs.append(output)
+            outputs.append(output.data[0][0])
 
         return outputs
 

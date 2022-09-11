@@ -1,63 +1,72 @@
 '''Data Scaler'''
-import numpy as np
 from pickle import load, dump
-
+from flask_server.neural_network.matrix import Matrix
 
 
 class DataScaler:
-    def __init__(self, featureNumber = 1, minimum = 0, maximum = 1):
-        self.featureMaxMin = [[0, 0] for _ in range(featureNumber)]  #[[max, min]]
+    def __init__(self, featureNumber=1, minimum=0, maximum=1):
+        self.featureMaxMin = [[0, 0]
+                              for _ in range(featureNumber)]  # [[max, min]]
+        self.featureNumber = featureNumber 
         self.minimum = minimum
         self.maximum = maximum
 
-
-    def fitData(self, data):
+    def fitData(self, data: list):
         '''Get maximum and minimum value of each column (feature) to change range of data into desired range
            Normalizing the data will improve the performance of the neural network#
         '''
-        #transpose array to turn columns into rows which are easier to index
-        columns = data.T
+        # transpose array to turn columns into rows which are easier to index
+        data = Matrix(len(data), self.featureNumber, data)
+        columns = data.transpose()
 
-        for i in range(0, len(columns)):
-            columnMin, columnMax = np.percentile(columns[i], [0, 100])
+        for i in range(0, len(columns.data)):
+            column = columns.data[i]
+            columnMin, columnMax = min(column), max(column)
             self.featureMaxMin[i][0] = columnMax
             self.featureMaxMin[i][1] = columnMin
 
+    def transformData(self, data: list):
+        # transpose data matrix to apply operation to one row at a time
+        data = Matrix(len(data), self.featureNumber, data)
+        columns = data.transpose()
 
-    def transformData(self, data):
-        #transpose data matrix to apply operation to one row at a time
-        dataCopy = np.copy(data).T
-
-        for i in range(0, len(dataCopy)):
-            #numpy allows one to perform arithmetic operations to a whole array
-            #use linear interpolation to scale data one column at a time
+        for i in range(0, len(columns.data)):
+            # numpy allows one to perform arithmetic operations to a whole array
+            # use linear interpolation to scale data one column at a time
             dataRange = self.featureMaxMin[i][0] - self.featureMaxMin[i][1]
             outputRange = self.maximum - self.minimum
 
-            inputProportion = (dataCopy[i] - self.featureMaxMin[i][1]) / dataRange
-            output = (inputProportion * outputRange) + self.minimum
-            dataCopy[i] = output
+            column = columns.data[i]
+            # apply coding to data to make it lie between 0 and 1
+            normalizedColumn = [
+                (dp - self.featureMaxMin[i][1]) / dataRange for dp in column]
+            # strech coded data to desired range
+            output = [(dp * outputRange) +
+                      self.minimum for dp in normalizedColumn]
+            columns.data[i] = output
 
-        return dataCopy.T
+        return columns.transpose().data
 
+    def inverseTransform(self, data: list):
+        '''use linear interpolation to get data back in original range'''
+        data = Matrix(len(data), self.featureNumber, data)
+        columns = data.transpose()
 
-    def inverseTransform(self, data):
-        #linear interpolate back to get data in original range
-        dataCopy = np.copy(data).T
-        
-        for i in range(0, len(dataCopy)):
+        for i in range(0, len(columns.data)):
             dataRange = self.featureMaxMin[i][0] - self.featureMaxMin[i][1]
             outputRange = self.maximum - self.minimum
+            column = columns.data[i]
 
-            inputProportion = (dataCopy[i] - self.minimum) / outputRange
-            output = (inputProportion * dataRange) + self.featureMaxMin[i][1]
-            dataCopy[i] = output
-        
-        return dataCopy.T
+            inputProportion = [(dp - self.minimum) /
+                               outputRange for dp in column]
+            output = [(dp * dataRange) + self.featureMaxMin[i][1]
+                      for dp in column]
+            columns.data[i] = output
 
-    
+        return columns.transpose().data
+
     def save(self, path):
-        #serialize object and save it with pickle
+        # serialize object and save it with pickle
 
         try:
             with open(f'{path}.pickle', 'wb') as stream:
@@ -67,11 +76,10 @@ class DataScaler:
 
         except Exception as e:
             print(e)
-            return False 
-
+            return False
 
     def load(self, path):
-        #load save pickle object
+        # load save pickle object
 
         try:
             with open(f'{path}.pickle', 'rb') as stream:
@@ -79,26 +87,21 @@ class DataScaler:
                 self.featureMaxMin = scaler.featureMaxMin
                 self.minimum = scaler.minimum
                 self.maximum = scaler.maximum
-                
+
                 return True
-        
+
         except Exception as e:
             print(e)
             return False
-                            
-
-
 
 
 if __name__ == '__main__':
     '''Test'''
-
-    data = np.array([[1, 2], [1, 3], [4, 7], [8, 10]], dtype = 'float')
-    print(data)
+    data = [[1, 2], [1, 3], [4, 7], [8, 10]]
 
     scaler = DataScaler(2)
     scaler.fitData(data)
-    
+
     transformed = scaler.transformData(data)
     print(transformed)
 

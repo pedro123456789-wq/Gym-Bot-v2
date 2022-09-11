@@ -13,7 +13,7 @@ class Matrix:
             for row in data:
                 if len(row) != cols:
                     raise ValueError('The number of columns is invalid')
-                
+
             self.data = data
         self.rows = rows
         self.cols = cols
@@ -79,6 +79,18 @@ class Matrix:
         else:
             raise ValueError('Invalid operand type')
 
+    def hadamardProduct(self, other: 'Matrix') -> 'Matrix':
+        output = self.data
+
+        if other.rows != self.rows or other.cols != self.cols:
+            raise ValueError('The two matrices must have the same diemnsions')
+
+        for i in range(0, self.rows):
+            for x in range(0, self.cols):
+                output[i][x] *= other.data[i][x]
+
+        return Matrix(self.rows, self.cols, output)
+
     def transpose(self) -> 'Matrix':
         newCols = self.rows
         newRows = self.cols
@@ -95,7 +107,6 @@ class Matrix:
         for row in self.data:
             output += str(row) + '\n'
         return output
-
 
 
 if __name__ == '__main__':

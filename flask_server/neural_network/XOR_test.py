@@ -3,9 +3,6 @@ from activation_layer import ActivationLayer
 from activation_functions import ActivationFunctions
 from loss_functions import LossFunctions
 from network import Network
-import numpy as np
-
-
 
 
 if __name__ == '__main__':
@@ -19,6 +16,8 @@ if __name__ == '__main__':
     network.add(ActivationLayer(ActivationFunctions.tanh, ActivationFunctions.tanhPrime))
 
     network.setLoss(LossFunctions.mse, LossFunctions.msePrime)
-    network.fit(xTrain, yTrain, 1000, 0.3, showLogs = False)
+    network.fit(xTrain, yTrain, 1000, 0.3, showLogs = True)
         
-    print(list(map(lambda i : round(i[0][0]), network.predict(xTrain))))
+    print(list(map(lambda i : round(i), network.predict(xTrain))))
+
+

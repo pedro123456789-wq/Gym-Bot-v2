@@ -1,13 +1,10 @@
 '''Performance Tracker'''
 '''Tracks performance of neural networks during training'''
-import numpy as np
 
 
 class PerformanceTracker:
     @staticmethod
-    def getAverageAcuracy(targetValues, predictions, showData = False):
-        targetValues = targetValues.reshape(targetValues.shape[0])
-        predictions = predictions.reshape(predictions.shape[0])
+    def getAverageAcuracy(targetValues: list, predictions: list, showData = False):
 
         if showData:
             for i in range(0, len(targetValues)):
@@ -15,10 +12,9 @@ class PerformanceTracker:
             print('----------')
 
         #get array with percentage errors for all predicted values 
-        errorPercentage = abs(targetValues - predictions) / targetValues
-
-        #calculate mean value from array to get average error
-        averageError = np.sum(errorPercentage) / errorPercentage.shape[0]
+        percentageErrors = [abs(targetValue[0] - prediction[0]) / max(1, targetValue[0]) for targetValue, prediction in zip(targetValues, predictions)]
+        # get mean from percentage errors array to get mean error
+        averageError = sum(percentageErrors) / len(percentageErrors) 
 
         #calculate average accuracy by subtracting average error from 1
         return f'Accuracy: {(1 - averageError) * 100}%'
