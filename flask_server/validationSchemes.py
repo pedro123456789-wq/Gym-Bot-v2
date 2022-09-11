@@ -58,7 +58,7 @@ loginSchema = {
         'password': {
             'type': 'string',
             'minLength': 1,
-            'maxLength': 40, 
+            'maxLength': 40,
         }
     },
     'required': ['username', 'password']
@@ -186,7 +186,26 @@ foodSchema = {
         }
     },
 
-    'required': ['foodName', 'calories', 'fat', 'carboHydrates', 'protein']
+    'required': ['foodName', 'calories', 'protein', 'carboHydrates', 'fat']
+}
+
+foodBounds = {
+    'calories': {
+        'max': 10000,
+        'min': 0
+    },
+    'protein': {
+        'max': 10000,
+        'min': 0
+    },
+    'carboHydrates': {
+        'max': 10000,
+        'min': 0
+    },
+    'fat': {
+        'max': 10000,
+        'min': 0
+    },
 }
 
 
@@ -203,7 +222,14 @@ workoutsSchema = {
             'type': 'number'
         }
     },
-    'required': ['name']
+    'required': ['name', 'caloriesBurned']
+}
+
+workoutBounds = {
+    'caloriesBurned': {
+        'max': 20000,
+        'min': 1
+    }
 }
 
 
@@ -221,6 +247,18 @@ exerciseSchema = {
         'repetitions': {
             'type': 'number'
         }
+    },
+    'required': ['name', 'durationSeconds', 'repetitions']
+}
+
+exerciseBounds = {
+    'durationSeconds': {
+        'max': 1440,
+        'min': 1
+    },
+    'repetitions': {
+        'max': 1000,
+        'min': 1
     }
 }
 
@@ -238,6 +276,61 @@ runSchema = {
         'caloriesBurned': {
             'type': 'number'
         }
+    },
+    'required': ['distance', 'durationSeconds', 'caloriesBurned']
+}
+
+runBounds = {
+    'distance': {
+        'max': 500,
+        'min': 0
+    },
+    'dirationSeconds': {
+        'max': 1440,
+        'min': 0
+    },
+    'caloriesBurned': {
+        'max': 20000,
+        'min': 0
+    }
+}
+
+'''/api/body-fat-prediction'''
+bodyFatPrediction = {
+    'type': 'object',
+    'properties': {
+        'weight': {
+            'type': 'number'
+        },
+        'chest': {
+            'type': 'number'
+        },
+        'abdomen': {
+            'type': 'number'
+        },
+        'hip': {
+            'type': 'number'
+        }
+    },
+    'required': ['weight', 'chest', 'abdomen', 'hip']
+}
+
+bodyFatPredictionBounds = {
+    'weight': {
+        'max': 1000,
+        'min': 0
+    },
+    'chest': {
+        'max': 1000,
+        'min': 0
+    },
+    'abdomen': {
+        'max': 1000,
+        'min': 0,
+    },
+    'hip': {
+        'max': 1000,
+        'min': 0
     }
 }
 
@@ -252,6 +345,18 @@ caloriesBurnedSchema = {
         'Heartrate': {
             'type': 'number'
         }
+    },
+    'required': ['Duration', 'HeartRate']
+}
+
+caloriesBurnedBounds = {
+    'Duration': {
+        'max': 1440,
+        'min': 0
+    },
+    'HeartRate': {
+        'max': 230,
+        'min': 20
     }
 }
 
@@ -261,7 +366,9 @@ sessionValidationSchema = {
     'type': 'object',
     'properties': {
         'token': {
-            'type': 'string'
+            'type': 'string',
+            'minLength': 1,
+            'maxLength': 1000
         },
         'username': {
             'type': 'string',
