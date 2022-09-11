@@ -1,0 +1,1 @@
+Swap input size and output size in dense layer __init__ matrix
