@@ -12,7 +12,7 @@ function ProfileCreation() {
         const userName = localStorage.getItem('username');
         const sessionToken = localStorage.getItem('sessionToken');
 
-        RequestHandler.POST('has-profile', {
+        RequestHandler.GET('has-profile', {
             username: userName,
             token: sessionToken
         }).then(response => {

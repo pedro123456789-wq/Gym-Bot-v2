@@ -19,7 +19,7 @@ function authenticate({ toggleLoad, toggleLogIn, navigate, setErrorMessage }: au
     const token: string = window.localStorage.getItem('sessionToken') || '';
 
 
-    RequestHandler.POST('check-session', { 'username': userName, 'token': token }).then(
+    RequestHandler.GET('check-session', { 'username': userName, 'token': token }).then(
         (response) => {
             toggleLoad(false);
 

@@ -9,7 +9,8 @@ export default makeStyles(theme => ({
     content: {
         flexGrow: 1,
         paddingTop: theme.spacing(10),
-        background: 'white'
+        background: 'white',
+        minHeight: '100vh'
     },
     gridRoot: {
         flexGrow: 1,
