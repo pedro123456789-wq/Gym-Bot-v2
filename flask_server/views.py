@@ -223,8 +223,7 @@ def profile():
         # get class attributes from target user and return them in a dictionary
         output = vars(targetUser)
         output.pop('_sa_instance_state')
-        output['distanceRanTarget'] = output['distanceRanTarget'] / \
-            1000  # convert distance to km
+        output['distanceRanTarget'] = output['distanceRanTarget'] / 1000  # convert distance to km
 
         return customResponse(True, 'Fetched Data Successfully', data=output)
 
