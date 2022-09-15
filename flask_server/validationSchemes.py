@@ -7,7 +7,7 @@ signUpSchema = {
     'properties': {
         'username': {
             'type': 'string',
-            'minLength': 1,
+            'minLength': 5,
             'maxLength': 20
         },
         'password': {
@@ -34,8 +34,8 @@ confirmEmailSchema = {
     'properties': {
         'username': {
             'type': 'string',
-            'minLength': 1,
-            'maxLength': 40
+            'minLength': 5,
+            'maxLength': 20
         },
         'confirmationCode': {
             'type': 'string',
@@ -282,10 +282,10 @@ runSchema = {
 
 runBounds = {
     'distance': {
-        'max': 500,
+        'max': 500000,
         'min': 0
     },
-    'dirationSeconds': {
+    'durationSeconds': {
         'max': 1440,
         'min': 0
     },
