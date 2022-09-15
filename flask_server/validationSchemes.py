@@ -7,7 +7,7 @@ signUpSchema = {
     'properties': {
         'username': {
             'type': 'string',
-            'minLength': 1,
+            'minLength': 5,
             'maxLength': 20
         },
         'password': {
