@@ -35,11 +35,6 @@ from datetime import datetime, timedelta
 import numpy as np
 
 
-# TODO:
-# Show correct vo2 max and workouts completed on workouts page
-# Make insights page more responsive and fix glitch with last day
-
-
 def isSameDay(date1: datetime, date2: datetime) -> bool:
     return date1.day == date2.day and date1.month == date2.month and date1.year == date2.year
 
@@ -132,8 +127,7 @@ def confirmEmail():
     except exceptions.ValidationError as error:
         return customResponse(False, error.message)
 
-    username, confirmationCode = data.get(
-        'username'), data.get('confirmationCode')
+    username, confirmationCode = data.get('username'), data.get('confirmationCode')
 
     # check if username is in database
     users = User.query.filter_by(username=username).all()
@@ -223,7 +217,8 @@ def profile():
         # get class attributes from target user and return them in a dictionary
         output = vars(targetUser)
         output.pop('_sa_instance_state')
-        output['distanceRanTarget'] = output['distanceRanTarget'] / 1000  # convert distance to km
+        output['distanceRanTarget'] = output['distanceRanTarget'] / \
+            1000  # convert distance to km
 
         return customResponse(True, 'Fetched Data Successfully', data=output)
 
@@ -550,16 +545,17 @@ def runs():
 
     elif request.method == 'POST':
         # add new run to database
-        
+
         try:
             validate(instance=data, schema=validationSchemes.runSchema)
         except exceptions.ValidationError as error:
             return customResponse(False, error.message)
-        
+
         if not checkRange(data, validationSchemes.runBounds):
             return customResponse(False, 'Some of the values are out of range')
 
-        distance, durationSeconds, caloriesBurned = data.get('distance'), data.get('durationSeconds'), data.get('caloriesBurned')
+        distance, durationSeconds, caloriesBurned = data.get(
+            'distance'), data.get('durationSeconds'), data.get('caloriesBurned')
 
         newRun = Run(distance=distance, durationSeconds=durationSeconds,
                      caloriesBurned=caloriesBurned)
@@ -595,6 +591,7 @@ def insights():
         else:
             startTs, endTs = datetime.strptime(
                 startDate, dateFormat), datetime.strptime(endDate, dateFormat)
+            endTs += timedelta(days=1)
     except:
         return customResponse(False, 'Invalid Date format')
 
@@ -606,7 +603,7 @@ def insights():
 
     # initialize all dicts to zeros for all dates
     # this is necessary because otherwize days in which data was not entered would not be present in the dictionaries
-    for i in range(0, interval + 1):
+    for i in range(0, interval):
         currentDate = startTs + timedelta(days=i)
         dayString = f'{currentDate.day}/{currentDate.month}/{currentDate.year}'
         distancesRan[dayString] = 0
@@ -655,20 +652,20 @@ def insights():
 @profileRequired(methods=['GET'])
 def bodyFat():
     data = request.headers
-    
+
     try:
-        validate(instance = data, schema = validationSchemes.bodyFatPrediction)
+        validate(instance=data, schema=validationSchemes.bodyFatPrediction)
     except Exception as error:
         return customResponse(False, error.message)
-    
+
     if not checkRange(data, validationSchemes.bodyFatPredictionBounds):
         return customResponse(False, 'Some values are out of range')
-    
-    headers = [data.get('weight'), data.get('chest'), data.get('abdomen'), data.get('hip')]
+
+    headers = [data.get('weight'), data.get('chest'),
+               data.get('abdomen'), data.get('hip')]
 
     # scale inputs
     X = np.array([list(map(float, headers))])
-    print(X)
     X = bodyFatScalerX.transformData(X)
     X = X.reshape(1, 1, 4)
 
@@ -687,10 +684,10 @@ def caloriesBurnedPrediction():
     targetUser = User.query.filter_by(username=data.get('username')).first()
 
     try:
-        validate(instance = data, schema=validationSchemes.caloriesBurnedSchema)
+        validate(instance=data, schema=validationSchemes.caloriesBurnedSchema)
     except Exception as error:
         return customResponse(False, error.message)
-    
+
     if not checkRange(data, validationSchemes.caloriesBurnedBounds):
         return customResponse(False, 'Some of the values are out of range')
 
