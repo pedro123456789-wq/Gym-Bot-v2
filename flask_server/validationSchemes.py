@@ -34,8 +34,8 @@ confirmEmailSchema = {
     'properties': {
         'username': {
             'type': 'string',
-            'minLength': 1,
-            'maxLength': 40
+            'minLength': 5,
+            'maxLength': 20
         },
         'confirmationCode': {
             'type': 'string',
