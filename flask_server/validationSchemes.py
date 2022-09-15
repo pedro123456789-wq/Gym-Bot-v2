@@ -282,10 +282,10 @@ runSchema = {
 
 runBounds = {
     'distance': {
-        'max': 500,
+        'max': 500000,
         'min': 0
     },
-    'dirationSeconds': {
+    'durationSeconds': {
         'max': 1440,
         'min': 0
     },
