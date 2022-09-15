@@ -6,64 +6,96 @@ import {
     FitnessCenter
 } from '@material-ui/icons';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
 import RequestHandler from '../RequestHandler/RequestHandler';
 import useStyles from './styles';
 import { menuProps } from './Workouts';
 
 
-interface workoutData{
-    distanceRan: number,
-    vo2Max: number, 
-    workoutNumber: number, 
-    averageDuration: number 
-}
-
-const defaultWorkoutData: workoutData = {
-    distanceRan: -1, 
-    vo2Max: -1, 
-    workoutNumber: -1, 
-    averageDuration: -1
-}
-
 
 function WorkoutMenu({ toggleMode }: menuProps) {
     const classes = useStyles();
-    const [workoutData, setWorkoutData] = useState<workoutData>(defaultWorkoutData);
-    
+    const [distanceRan, setDistanceRan] = useState<number>(-1);
+    const [vo2Max, setVo2Max] = useState<number>(-1);
+    const [workoutNumber, setWorkoutNumber] = useState<number>(-1);
+    const [caloriesBurned, setCaloriesBurned] = useState<number>(-1);
+
+
+    function dateToString(date: Date) {
+        var dd = String(date.getDate()).padStart(2, '0');
+        var mm = String(date.getMonth() + 1).padStart(2, '0'); //January is 0
+        var yyyy = date.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+    }
+
     // fetch data from last 7 days
-    function fetchData(){
+    function fetchData() {
+        var endDateObj = new Date();
+        endDateObj.setDate(endDateObj.getDate() + 1); // server query is non-inclusive so end date needs to be one more than final date
+        const interval = 7;
+        var startDateObj = new Date();
+        startDateObj.setDate(startDateObj.getDate() - interval);
+
+        var startDate = dateToString(startDateObj);
+        var endDate = dateToString(endDateObj);
+
         // get run data
-        RequestHandler.GET('/runs', {
-            username: window.localStorage.getItem('username'), 
-            token: window.localStorage.getItem('sessionToken'), 
-            startDate: 'ALL', 
-            endDate: 'ALL'
+        RequestHandler.GET('runs', {
+            username: window.localStorage.getItem('username'),
+            token: window.localStorage.getItem('sessionToken'),
+            startDate: startDate,
+            endDate: endDate
         }).then((response) => {
-            if (response.success){
-                setWorkoutData({...workoutData, distanceRan: response.data.distance});
-            }else{
-                alert(response.message);
+            if (response.success) {
+                const runs = response.data.runs;
+                var totalDistance = 0;
+
+                for (let i = 0; i < runs.length; i++) {
+                    const run = runs[i];
+                    totalDistance += run.distance;
+                }
+
+                setDistanceRan(totalDistance);
+            } else {
+                console.log(response.message);
             }
         });
 
-        RequestHandler.GET('/profile', {
-            username: window.localStorage.getItem('username'), 
+        // get vo2 max from profile data
+        RequestHandler.GET('profile', {
+            username: window.localStorage.getItem('username'),
             token: window.localStorage.getItem('sessionToken')
         }).then((response) => {
-            if (response.success){
-                setWorkoutData({...workoutData, vo2Max: response.vo2Max});
+            if (response.success) {
+                setVo2Max(response.data.vo2Max);
+            } else {
+                console.log(response.message);
             }
         });
 
-        RequestHandler.GET('/workouts', {
-            username: window.localStorage.getItem('username'), 
-            token: window.localStorage.getItem('sessionToken'), 
-            startingDate: '01/01/2000', 
-            endDate: '01/01/2000', 
-        })
+        //get workout data 
+        RequestHandler.GET('workouts', {
+            username: window.localStorage.getItem('username'),
+            token: window.localStorage.getItem('sessionToken'),
+            startDate: startDate,
+            endDate: endDate,
+            targetWorkouts: 'ALL'
+        }).then((response) => {
+            if (response.success) {
+                const workouts = response.workouts;
+                setWorkoutNumber(workouts.length);
 
+                var totalCalories = 0;
+                workouts.forEach((workout: any) => totalCalories += workout.caloriesBurned);
+                setCaloriesBurned(totalCalories);
+            } else {
+                console.log(response.message);
+            }
+        })
     }
+
+    useEffect(fetchData, []);
 
     return (
         <div className={classes.content}>
@@ -76,8 +108,17 @@ function WorkoutMenu({ toggleMode }: menuProps) {
                             <DirectionsRun className={classes.optionIcon} />
                         </div>
 
-                        <p className={classes.smallText}>Record: 17:30</p>
-                        <p className={classes.smallText}>Vo2 Max: 66</p>
+                        {(distanceRan === -1 || vo2Max === -1) ?
+                            <div className='text-center' style = {{maxHeight: '10vh'}}>
+                                <LoadingIndicator />
+                            </div>
+                            :
+                            <div>
+                                <h5 className='text-center mt-4 mb-4'>Last 7 days</h5>
+                                <p className={classes.smallText}>Distance Ran: {distanceRan}</p>
+                                <p className={classes.smallText}>Vo2 Max: {vo2Max}</p>
+                            </div>
+                        }
 
                         {/* change page to running section */}
                         <button className={classes.actionButton} onClick={() => toggleMode('run')}>
@@ -94,10 +135,20 @@ function WorkoutMenu({ toggleMode }: menuProps) {
                             <FitnessCenter className={classes.optionIcon} />
                         </div>
 
-                        <p className={classes.smallText}>Workouts Done: 10</p>
-                        <p className={classes.smallText}>Average Duration: 50:00</p>
+                        {(workoutNumber === -1 || caloriesBurned === -1) ?
+                            <div className='text-center' style = {{maxHeight: '10vh'}}>
+                                <LoadingIndicator />
+                            </div>
+                            :
+                            <>
+                                <h5 className='text-center mt-4 mb-4'>Last 7 days: </h5>
+                                <p className={classes.smallText}>Workouts Done: {workoutNumber}</p>
+                                <p className={classes.smallText}>Calories Burned: {caloriesBurned}</p>
+                            </>
+                        }
 
-                        <button className={classes.actionButton} onClick = {() => toggleMode('liveWorkout')}>
+
+                        <button className={classes.actionButton} onClick={() => toggleMode('liveWorkout')}>
                             Start  Workout
                         </button>
 
