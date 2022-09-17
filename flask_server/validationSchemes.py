@@ -253,7 +253,7 @@ exerciseSchema = {
 
 exerciseBounds = {
     'durationSeconds': {
-        'max': 1440,
+        'max': 86400,
         'min': 1
     },
     'repetitions': {
