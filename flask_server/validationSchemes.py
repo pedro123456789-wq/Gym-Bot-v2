@@ -286,7 +286,7 @@ runBounds = {
         'min': 0
     },
     'durationSeconds': {
-        'max': 1440,
+        'max': 86400,
         'min': 0
     },
     'caloriesBurned': {
