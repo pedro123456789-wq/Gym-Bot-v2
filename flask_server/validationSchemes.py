@@ -318,19 +318,19 @@ bodyFatPrediction = {
 bodyFatPredictionBounds = {
     'weight': {
         'max': 1000,
-        'min': 0
+        'min': 1
     },
     'chest': {
         'max': 1000,
-        'min': 0
+        'min': 1
     },
     'abdomen': {
         'max': 1000,
-        'min': 0,
+        'min': 1
     },
     'hip': {
         'max': 1000,
-        'min': 0
+        'min': 1
     }
 }
 
