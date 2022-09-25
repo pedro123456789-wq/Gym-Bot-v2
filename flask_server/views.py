@@ -56,6 +56,7 @@ def home():
 @app.route('/api/sign-up', methods=['POST'])
 def signUp():
     data = request.get_json()
+    print(data)
 
     # check if headers have valid data using json validation schemes
     try:
