@@ -69,22 +69,50 @@ class TestAutomator:
 
 
 if __name__ == '__main__':
-    testEndpoints = [EndpointRequest('/api/sign-up', {'username': 'user1', 'password': 'password123', 'email': 'abc'}, 'POST'), 
-                     EndpointRequest('/api/sign-up', {'username': '1234', 'password': '3345', 'email': 'false'}, 'POST'), 
+    testEndpoints1 = [ 
+                     EndpointRequest('/api/sign-up', {'username': 'user1', 'password': 'Password123#', 'email': '1234'}, 'POST'), 
+                     EndpointRequest('/api/sign-up', {'username': 1234, 'password': 3345, 'email': 'false'}, 'POST'), 
                      EndpointRequest('/api/sign-up', {'username': 'user1', 'password': '12', 'email': 'email@gmail.com'}, 'POST'), 
-                     EndpointRequest('/api/sign-up', {'username': 'user1', 'password': 'a123456#', 'email': 'email@gmail.com'}, 'POST'), 
-                     EndpointRequest('/api/sign-up', {'username': 'pedro', 'password': 'password123#', 'email': 'email@gmail.com'}, 'POST'),
-                     EndpointRequest('/api/sign-up', {'username': 'user3', 'password': 'Password1234#', 'email': 'email2@gmail.com'}, 'POST')
+                     EndpointRequest('/api/sign-up', {'username': 'user1', 'password': 'A123456#', 'email': 'email@gmail.com'}, 'POST'), 
+                     EndpointRequest('/api/sign-up', {'username': 'pedro', 'password': 'Password123#', 'email': 'email2@gmail.com'}, 'POST'),
+                     EndpointRequest('/api/sign-up', {'username': 'user3', 'password': 'Password1234#', 'email': 'email3@gmail.com'}, 'POST')
                     ]
     
-    expectedResponses = [ExpectedResponse(400, {'success': False, 'message': 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol and 1 capital letter'}), 
+    expectedResponses1 = [
+                         ExpectedResponse(200, {'success': True, 'message': 'Account created'}), 
+                         ExpectedResponse(400, {'success': False, 'message': 'Invalid email'}), 
+                         ExpectedResponse(400, {'success': False, 'message': 'Invalid value for username'}), 
                          ExpectedResponse(400, {'success': False, 'message': 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol and 1 capital letter'}), 
-                         ExpectedResponse(400, {'success': False, 'message': 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol and 1 capital letter'}), 
-                         ExpectedResponse(400, {'success': False, 'message': 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol and 1 capital letter'}), 
-                         ExpectedResponse(400, {'success': False, 'message': 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol and 1 capital letter'}), 
-                         ExpectedResponse(400, {'success': False, 'message': 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol and 1 capital letter'})
+                         ExpectedResponse(200, {'success': True, 'message': 'Account created'}), 
+                         ExpectedResponse(400, {'success': False, 'message': 'Username already taken'}), 
+                         ExpectedResponse(200, {'success': True, 'message': 'Account created'})
                         ]
+    
     automator = TestAutomator('http://localhost:8080')
-    automator.checkEnpoints(testEndpoints, expectedResponses, 'Sign Up')
+    automator.checkEnpoints(testEndpoints1, expectedResponses1, 'sign-up')
+    
+    testEndpoints2 = [ 
+                     EndpointRequest('/api/sign-up', {'username': 'user1', 'password': 'Password123#', 'email': '1234'}, 'POST'), 
+                     EndpointRequest('/api/sign-up', {'username': 1234, 'password': 3345, 'email': 'false'}, 'POST'), 
+                     EndpointRequest('/api/sign-up', {'username': 'user1', 'password': '12', 'email': 'email@gmail.com'}, 'POST'), 
+                     EndpointRequest('/api/sign-up', {'username': 'user1', 'password': 'A123456#', 'email': 'email@gmail.com'}, 'POST'), 
+                     EndpointRequest('/api/sign-up', {'username': 'pedro', 'password': 'Password123#', 'email': 'email2@gmail.com'}, 'POST'),
+                     EndpointRequest('/api/sign-up', {'username': 'user3', 'password': 'Password1234#', 'email': 'email3@gmail.com'}, 'POST')
+                    ]
+    
+    expectedResponses2 = [
+                         ExpectedResponse(200, {'success': True, 'message': 'Account created'}), 
+                         ExpectedResponse(400, {'success': False, 'message': 'Invalid email'}), 
+                         ExpectedResponse(400, {'success': False, 'message': 'Invalid value for username'}), 
+                         ExpectedResponse(400, {'success': False, 'message': 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol and 1 capital letter'}), 
+                         ExpectedResponse(200, {'success': True, 'message': 'Account created'}), 
+                         ExpectedResponse(400, {'success': False, 'message': 'Username already taken'}), 
+                         ExpectedResponse(200, {'success': True, 'message': 'Account created'})
+                        ]
+    
+    automator.checkEnpoints(testEndpoints1, expectedResponses1, 'check-email')
+    
+    
+    
     
     
