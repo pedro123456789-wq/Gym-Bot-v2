@@ -1,4 +1,3 @@
-import { SpawnSyncOptionsWithBufferEncoding } from 'child_process';
 import { apiUrl } from '../GlobalVariables';
 
 
