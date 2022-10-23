@@ -108,6 +108,3 @@ class Run(db.Model):
     completionDate = db.Column(db.DateTime, nullable = False, default = datetime.utcnow)
 
     userId = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
-
-
-
