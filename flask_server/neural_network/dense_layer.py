@@ -1,6 +1,6 @@
 '''Dense Layer'''
 from layer import Layer
-from matrix import Matrix
+from flask_server.neural_network.matrix import Matrix
 
 
 class DenseLayer(Layer):
@@ -14,10 +14,11 @@ class DenseLayer(Layer):
 
     def forwardPropagate(self, inp: Matrix):
         self.input = inp
+        
         #add product of inputs with heights plus the bias for each neuron
         self.output = (inp * self.weights) + self.bias
-
         return self.output
+
 
     def backPropagate(self, dEbydX: Matrix, learningRate: int):
         #partial derivative of error with respect to input
@@ -29,6 +30,9 @@ class DenseLayer(Layer):
         self.bias -= (dEbydX * learningRate)
 
         return inputError
+    
+    def __str__(self):
+        return f'<Layer>: \nInput size: {self.weights.rows}\nOutput size: {self.weights.cols}'
         
     
 

@@ -1,5 +1,6 @@
 '''Data Scaler'''
 from pickle import load, dump
+#from matrix import Matrix
 from flask_server.neural_network.matrix import Matrix
 
 

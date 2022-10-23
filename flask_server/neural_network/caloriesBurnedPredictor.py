@@ -1,5 +1,4 @@
 import pandas as pd
-
 from data_scaler import DataScaler
 from activation_layer import ActivationLayer
 from performance_tracker import PerformanceTracker
@@ -66,7 +65,7 @@ if __name__ == '__main__':
     network.setLoss(LossFunctions.mse, LossFunctions.msePrime)
 
     # train model and make predictions
-    network.fit(xTrain, yTrain, 100, 0.07)
+    network.fit(xTrain, yTrain, 5, 0.1)
     predictions = network.predict(xTest)
     predictions = yScaler.inverseTransform([[p] for p in predictions])
     yTest = yScaler.inverseTransform([[t] for t in yTest])
@@ -82,4 +81,5 @@ if __name__ == '__main__':
             r'C:\Users\pl156\Documents\schoolwork\Computer Science A-Level\gym_bot_v2\flask_server\models\calories_burned_predictor\x_scaler')
         yScaler.save(
             r'C:\Users\pl156\Documents\schoolwork\Computer Science A-Level\gym_bot_v2\flask_server\models\calories_burned_predictor\y_scaler')
-        print('Model and data scalers Saved')
+    
+    print('Model and data scalers Saved')

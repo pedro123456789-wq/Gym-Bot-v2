@@ -2,7 +2,7 @@
 from time import time
 from pickle import dump, load
 from flask_server.neural_network.matrix import Matrix
-
+#from matrix import Matrix
 
 
 class Network:
@@ -65,13 +65,17 @@ class Network:
     def predict(self, inputData: list):
         outputs = []
         inputData = [Matrix(1, len(dataPoint), [dataPoint]) for dataPoint in inputData]
-
+        
         #forward propagate all inputs
         for i in range(0, len(inputData)):
             output = inputData[i]
+            print(output)
+            print(list(map(str, self.layers)))
 
             for layer in self.layers:
                 output = layer.forwardPropagate(output)
+                print(output)
+                print('--')
             
             outputs.append(output.data[0][0])
 

@@ -59,7 +59,7 @@ class Matrix:
 
             return Matrix(self.rows, self.cols, output)
 
-        elif type(other) == Matrix:
+        elif 'Matrix' in str(type(other)):
             if self.cols == other.rows:
                 output = [[0 for _ in range(other.cols)]
                           for _ in range(self.rows)]
@@ -112,4 +112,13 @@ class Matrix:
 if __name__ == '__main__':
     m1 = Matrix(2, 2, [[1, 2], [3, 4]])
     m2 = Matrix(2, 1, [[4], [5]])
-    print(m1 * m2)
+    m3 = Matrix(3, 3)
+    m3.randomInit()
+    m4 = Matrix(2, 2, [[3, 4], [5, 6]])
+    
+    print(m3) #test randomInit and __str__ methods
+    print(m1 + m4) #test __add__ methods, expect[[4, 6], [8, 10]]
+    print(m1 * m2) #test __mul__ method, expect [[14, 32]]
+    print(m1 * 5.0) #test __mul__ method, expect [[5, 10], [15, 20]]
+    print(m1.hadamardProduct(m4)) #test hadamardProduct method expect [[3, 8], [15, 24]]
+    print(m1 - m4) #test __sub__ method expect [[0, 4], [10, 18]]

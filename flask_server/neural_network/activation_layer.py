@@ -1,5 +1,5 @@
 '''Activation Layer'''
-from matrix import Matrix
+from flask_server.neural_network.matrix import Matrix
 from layer import Layer
 
 

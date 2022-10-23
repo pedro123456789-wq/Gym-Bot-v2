@@ -1,5 +1,4 @@
 import pandas as pd
-
 from dense_layer import DenseLayer
 from activation_layer import ActivationLayer
 from performance_tracker import PerformanceTracker
@@ -43,14 +42,16 @@ if __name__ == '__main__':
 
     # build network model:
     #     input layer with 4 neurons
-    #     hidden layer with 4 neurons
+    #     two hidden layers with 10 neurons each
     #     output layer with one neuron and sigmoid activation function 
 
 
     network = Network()
-    network.add(DenseLayer(4, 4))
-    network.add(ActivationLayer(ActivationFunctions.RELU, ActivationFunctions.RELUPrime))
     network.add(DenseLayer(4, 10))
+    network.add(ActivationLayer(ActivationFunctions.RELU, ActivationFunctions.RELUPrime))
+    network.add(DenseLayer(10, 10))
+    network.add(ActivationLayer(ActivationFunctions.RELU, ActivationFunctions.RELUPrime))
+    network.add(DenseLayer(10, 10))
     network.add(ActivationLayer(ActivationFunctions.RELU, ActivationFunctions.RELUPrime))
     network.add(DenseLayer(10, 1))
     network.add(ActivationLayer(ActivationFunctions.sigmoid, ActivationFunctions.sigmoidPrime))
@@ -58,9 +59,10 @@ if __name__ == '__main__':
     network.setLoss(LossFunctions.mse, LossFunctions.msePrime)
     
     print('Training network ...')
-    network.fit(convertedX, convertedY, 300, 0.15, showLogs = True)
+    network.fit(convertedX, convertedY, 10, 0.1, showLogs = True)
 
     #test accuracy of network
+    print(type(convertedX))
     predictions = network.predict(convertedX)
     predictions = yScaler.inverseTransform([[prediction] for prediction in predictions]) 
     print(PerformanceTracker.getAverageAcuracy(Y, predictions, False))
