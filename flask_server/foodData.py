@@ -107,12 +107,16 @@ class FoodData:
             except Exception:
                 return None
             
+            if len(nutrients) == 0:
+                nutrients = {'carbohydrates': 0, 'protein': 0, 'fat': 0, 'energy': 0, 
+                             'carbohydrates_unit': 'g', 'proteins_unit': 'g', 'fat_unit': 'g', 'energy_unit': 'cal'}
+                
             output = {
                         'foodName': productName, 
                         'servingSize': {'value': float(servingSize[:-1]), 'unit': servingSize[-1]}, 
                         'nutrients': {
                             nutrient if nutrient != 'energy' else 'calories': 
-                                {'value' : nutrients[nutrient], 'unit': nutrients[f'{nutrient}_unit']}
+                                {'value' : nutrients.get(nutrient), 'unit': nutrients[f'{nutrient}_unit']}
                             for nutrient in ['carbohydrates', 'proteins', 'fat', 'energy']
                         }
                      }
