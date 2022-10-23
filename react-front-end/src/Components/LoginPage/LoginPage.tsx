@@ -117,8 +117,6 @@ function LoginPage() {
                         </Grid>
                     </form>
                 </div>
-
-
             </div>
         </div>
     );

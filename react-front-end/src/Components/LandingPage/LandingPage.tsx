@@ -1,5 +1,4 @@
 import Navbar from "../NavBar/Navbar";
-
 const video = require('../../Assets/landing_page_video.mp4');
 
 

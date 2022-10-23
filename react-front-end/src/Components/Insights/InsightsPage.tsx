@@ -202,7 +202,7 @@ function InsightsPage() {
             if (response.success) {
                 const weight = response.data.weight;
 
-                RequestHandler.GET('body-fat-prediction',
+                RequestHandler.POST('body-fat-prediction',
                     {
                         username: window.localStorage.getItem('username'),
                         token: window.localStorage.getItem('sessionToken'),
@@ -219,7 +219,9 @@ function InsightsPage() {
                         setTimeout(() => {
                             window.scrollTo({ top: 0, behavior: 'smooth' });
                             setAlertState({ ...alertState, isShow: false });
+                            setBodyFatPrediction(-2);
                         }, 2000);
+                         //do not display anything as output
                     }
                 })
             } else {
@@ -227,7 +229,10 @@ function InsightsPage() {
                 setTimeout(() => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     setAlertState({ ...alertState, isShow: false });
+                    setBodyFatPrediction(-2);
                 }, 2000);
+
+                
             }
         })
     }
@@ -298,7 +303,7 @@ function InsightsPage() {
                                 value={bodyMeasurements.chest || undefined} //required to show placeholder text when no data is entered
                                 onChange={(e) => setBodyMeasurements({
                                     ...bodyMeasurements,
-                                    chest: e.target.value as unknown as number
+                                    chest: parseInt(e.target.value) as unknown as number
                                 })}>
                             </input>
                             <input placeholder='Abdomen circumference (cm)'
@@ -307,7 +312,7 @@ function InsightsPage() {
                                 value={bodyMeasurements.abdomen || undefined}
                                 onChange={(e) => setBodyMeasurements({
                                     ...bodyMeasurements,
-                                    abdomen: e.target.value as unknown as number
+                                    abdomen: parseInt(e.target.value) as unknown as number
                                 })}>
                             </input>
                             <input placeholder='Hip circumference (cm)'
@@ -316,7 +321,7 @@ function InsightsPage() {
                                 value={bodyMeasurements.hip || undefined}
                                 onChange={(e) => setBodyMeasurements({
                                     ...bodyMeasurements,
-                                    hip: e.target.value as unknown as number
+                                    hip: parseInt(e.target.value) as unknown as number
                                 })}>
                             </input>
                             <button className={classes.actionButton} onClick={predictBodyFat}>Predict Body Fat</button>

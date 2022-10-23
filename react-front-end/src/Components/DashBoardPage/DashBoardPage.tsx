@@ -254,7 +254,7 @@ function DashBoardPage() {
     <div className={classes.root}>
       <CssBaseline />
       <SideBar />
-
+      
       <div className={classes.content}>
         <Typography variant='h5' color='textSecondary' style={{ paddingLeft: '2vw' }}>
           Your Day

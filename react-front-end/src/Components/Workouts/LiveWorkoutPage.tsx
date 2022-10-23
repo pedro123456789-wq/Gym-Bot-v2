@@ -71,11 +71,11 @@ function LiveWorkoutPage({toggleMode}: menuProps) {
     const [completedExercises, setCompletedExercises] = useState<[Exercise]>([{ durationSeconds: 0, name: '' }]);
 
     function getCaloriesBurned(){
-        RequestHandler.GET('calories-burned-prediction', 
+        RequestHandler.POST('calories-burned-prediction', 
         {
             username: window.localStorage.getItem('username'), 
             token: window.localStorage.getItem('sessionToken'), 
-            duration: (durationState.totalDurationSeconds / 60), 
+            duration: Math.min(1, durationState.totalDurationSeconds / 60), 
             heartRate: heartRate
         }).then((response) => { 
             if (response.success){
