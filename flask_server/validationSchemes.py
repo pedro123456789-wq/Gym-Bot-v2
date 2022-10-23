@@ -39,7 +39,8 @@ confirmEmailSchema = {
         },
         'confirmationCode': {
             'type': 'string',
-            'length': 5
+            'minLength': 5, 
+            'maxLength': 5
         }
     },
     'required': ['username', 'confirmationCode']
@@ -339,22 +340,22 @@ bodyFatPredictionBounds = {
 caloriesBurnedSchema = {
     'type': 'object',
     'properties': {
-        'Duration': {
+        'duration': {
             'type': 'number'
         },
-        'Heartrate': {
+        'heartrate': {
             'type': 'number'
         }
     },
-    'required': ['Duration', 'HeartRate']
+    'required': ['duration', 'heartRate']
 }
 
 caloriesBurnedBounds = {
-    'Duration': {
+    'duration': {
         'max': 1440,
         'min': 0
     },
-    'HeartRate': {
+    'heartRate': {
         'max': 230,
         'min': 20
     }
