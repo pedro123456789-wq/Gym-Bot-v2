@@ -56,7 +56,6 @@ def home():
 @app.route('/api/sign-up', methods=['POST'])
 def signUp():
     data = request.get_json()
-    print(data)
 
     # check if headers have valid data using json validation schemes
     try:
@@ -71,10 +70,8 @@ def signUp():
 
         return customResponse(False, error.message)
 
-    username, email, password = data.get(
-        'username'), data.get('email'), data.get('password')
-    hashedPassword = encryptionHandler.generate_password_hash(
-        password).decode('utf-8')
+    username, email, password = data.get('username'), data.get('email'), data.get('password')
+    hashedPassword = encryptionHandler.generate_password_hash(password).decode('utf-8')
 
     # check if username or email are  already taken
     matching_usernames = User.query.filter_by(username=username).all()
@@ -105,13 +102,10 @@ def signUp():
         sendEmail(
             email,
             'Gym Bot verification code',
-            '\n'.join(['Thank you for signing up',
-                       f'Your verification code is: {confirmationCode}',
-                       '',
-                       'Gym Bot'
-                       ])
+            f'Your verification code is {confirmationCode}'
         )
-    except Exception:
+    except Exception as e:
+        print(e)
         print('Internal server failure')
         return customResponse(False, 'Internal server error')
 
@@ -168,8 +162,7 @@ def log_in():
             return customResponse(False, 'We sent you a verification code. Please check your email')
 
         if encryptionHandler.check_password_hash(targetPassword, password):
-            token = jwt.encode({'user': username, 'exp': datetime.utcnow(
-            ) + timedelta(minutes=60)}, app.config['SECRET_KEY']).decode('utf-8')
+            token = jwt.encode({'user': username, 'exp': datetime.utcnow() + timedelta(minutes=60)}, app.config['SECRET_KEY']).decode('utf-8')
             return customResponse(True, 'Login successful', token=str(token))
         else:
             return customResponse(False, 'Incorrect password')
@@ -294,6 +287,7 @@ def food():
                     startDate, dateFormat), datetime.strptime(endDate, dateFormat)
         except Exception as e:
             return customResponse(False, 'Invalid date format')
+
 
         # query food_record table (junction table) to find entries which have the user id of target user and have timestamp between start and end ts
         foodRecordQuery = db.session.query(food_record).filter((food_record.c.user_id == targetUser.id) &
@@ -648,11 +642,11 @@ def insights():
                                                                    })
 
 
-@app.route('/api/body-fat-prediction', methods=['GET'])
-@loginRequired(methods=['GET'])
-@profileRequired(methods=['GET'])
+@app.route('/api/body-fat-prediction', methods=['POST'])
+@loginRequired(methods=['POST'])
+@profileRequired(methods=['POST'])
 def bodyFat():
-    data = request.headers
+    data = request.get_json()
 
     try:
         validate(instance=data, schema=validationSchemes.bodyFatPrediction)
@@ -662,26 +656,23 @@ def bodyFat():
     if not checkRange(data, validationSchemes.bodyFatPredictionBounds):
         return customResponse(False, 'Some values are out of range')
 
-    headers = [data.get('weight'), data.get('chest'),
-               data.get('abdomen'), data.get('hip')]
-
-    # scale inputs
-    X = np.array([list(map(float, headers))])
+    #transform data into smaller range
+    X = [[data.get('weight'), data.get('chest'), data.get('abdomen'), data.get('hip')]]
     X = bodyFatScalerX.transformData(X)
-    X = X.reshape(1, 1, 4)
-
+    
     # use neural network to make predictions
     prediction = bodyFatPredictor.predict(X)
-    prediction = round(bodyFatScalerY.inverseTransform(prediction)[0][0][0], 0)
+    
+    #use data scaler to convert data back into original range
+    prediction = bodyFatScalerY.inverseTransform([[prediction[0]]])[0][0]
+    return customResponse(True, 'Successful prediction', prediction=round(prediction, 1))
 
-    return customResponse(True, 'Successful prediction', prediction=prediction)
 
-
-@app.route('/api/calories-burned-prediction', methods=['GET'])
-@loginRequired(methods=['GET'])
-@profileRequired(methods=['GET'])
+@app.route('/api/calories-burned-prediction', methods=['POST'])
+@loginRequired(methods=['POST'])
+@profileRequired(methods=['POST'])
 def caloriesBurnedPrediction():
-    data = request.headers
+    data = request.get_json()
     targetUser = User.query.filter_by(username=data.get('username')).first()
 
     try:
@@ -696,17 +687,14 @@ def caloriesBurnedPrediction():
     gender, age, height, weight = targetUser.gender, targetUser.age, targetUser.height, targetUser.weight
 
     # format and convert data into necessary format
-    X = np.array(
-        [list(map(float, [gender, age, height, weight, duration, heartRate]))])
+    X = [[gender, age, height, weight, duration, heartRate]]
     X = caloriesBurnedScalerX.transformData(X)
-    X = X.reshape(1, 1, 6)
 
-    # make prediction of calories burned
+    # make prediction of calories burned and transform it back to original range
     prediction = caloriesBurnedPredictor.predict(X)
-    prediction = round(
-        caloriesBurnedScalerY.inverseTransform(prediction)[0][0][0], 0)
-
-    return customResponse(True, 'Successfull prediction', prediction=prediction)
+    prediction = caloriesBurnedScalerY.inverseTransform([[prediction[0]]])[0][0]
+    
+    return customResponse(True, 'Successfull prediction', prediction=round(prediction, 1))
 
 
 @app.route('/api/food-data', methods=['GET'])
