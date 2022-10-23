@@ -1,5 +1,6 @@
 import requests
-from time import time 
+from time import time
+from json import dumps
 
 
 class ExpectedResponse:
@@ -8,13 +9,12 @@ class ExpectedResponse:
         self.content = content
 
 
-
 class EndpointRequest:
-    def __init__(self, url, headers, method):
+    def __init__(self, url, headers, method, useJson = False):
         self.url = url
         self.headers = headers
         self.method = method
-
+        self.useJson = useJson
 
 
 class TestAutomator:
@@ -24,7 +24,7 @@ class TestAutomator:
         self.failed = 0
         self.averageResponseTime = 0
 
-    def checkEnpoints(self, endpointRequests, expectedResponses, endpointName = 'Enpoint'):
+    def checkEnpoints(self, endpointRequests, expectedResponses, endpointName='Enpoint'):
         passed = 0
         failed = 0
         testId = 1
@@ -32,21 +32,31 @@ class TestAutomator:
         totalDuration = 0
 
         print('<--- Automated Tests --->')
-        print(f'Performing {len(endpointRequests)} tests on {self.baseUrl}/{endpointName}\n\n')
-
+        print(
+            f'Performing {len(endpointRequests)} tests on {self.baseUrl}/{endpointName}\n\n')
 
         for endpointRequest, expectedResponse in zip(endpointRequests, expectedResponses):
             method = endpointRequest.method
-            
+
             startTime = time()
             if method != 'GET':
-                response = requests.request(method = endpointRequest.method, url = f'{self.baseUrl}/{endpointRequest.url}', json = endpointRequest.headers)
+                response = requests.request(
+                    method=endpointRequest.method, url=f'{self.baseUrl}/{endpointRequest.url}', json=endpointRequest.headers)
             else:
-                response = requests.request(method = endpointRequest.method, url = f'{self.baseUrl}/{endpointRequest.url}', headers = endpointRequest.headers)
-            
+                if endpointRequest.useJson:
+                    response = requests.request(method=endpointRequest.method, url=f'{self.baseUrl}/{endpointRequest.url}', json=endpointRequest.headers)
+                else:    
+                    response = requests.request(method=endpointRequest.method, url=f'{self.baseUrl}/{endpointRequest.url}', headers=endpointRequest.headers)
+
             statusCode = response.status_code
             content = response.json()
             duration = time() - startTime
+
+            # token is randomly generated so cannot be predicted. Comparing given token to it will cause
+            # tests to fail incorrectly
+
+            if 'token' in content:
+                content.pop('token')
 
             if statusCode == expectedResponse.statusCode and content == expectedResponse.content:
                 passed += 1
@@ -54,65 +64,49 @@ class TestAutomator:
             else:
                 failed += 1
                 print(f'Failed test #{testId}')
-                print(f'Status Code: {statusCode}, expected: {expectedResponse.statusCode}')
-                print(f'Response: {content}, expected: {expectedResponse.content}')
+                print(
+                    f'Status Code: {statusCode}, expected: {expectedResponse.statusCode}')
+                print(
+                    f'Response: {content}, expected: {expectedResponse.content}')
 
             testId += 1
             totalDuration += duration
 
         print(f'\n\nTests passed: {passed}/{totalTests}')
-        print(f'Tests failed: {failed}/{totalTests}')
         print(f'Time elapsed: {totalDuration}s')
         print('<----   ---->')
 
 
-
-
 if __name__ == '__main__':
-    testEndpoints1 = [ 
-                     EndpointRequest('/api/sign-up', {'username': 'user1', 'password': 'Password123#', 'email': '1234'}, 'POST'), 
-                     EndpointRequest('/api/sign-up', {'username': 1234, 'password': 3345, 'email': 'false'}, 'POST'), 
-                     EndpointRequest('/api/sign-up', {'username': 'user1', 'password': '12', 'email': 'email@gmail.com'}, 'POST'), 
-                     EndpointRequest('/api/sign-up', {'username': 'user1', 'password': 'A123456#', 'email': 'email@gmail.com'}, 'POST'), 
-                     EndpointRequest('/api/sign-up', {'username': 'pedro', 'password': 'Password123#', 'email': 'email2@gmail.com'}, 'POST'),
-                     EndpointRequest('/api/sign-up', {'username': 'user3', 'password': 'Password1234#', 'email': 'email3@gmail.com'}, 'POST')
-                    ]
+    sessionToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicGVkcm8iLCJleHAiOjE2NjY0NTkyMTh9.x2kvw6WfC_qRwjB_YzLtB_ootqPZv8KfpwnqS9seHEE'
+    tests = [EndpointRequest('/api/body-fat-prediction', 
+                            {'username': 'pedro', 
+                             'token': sessionToken, 
+                             'weight': '72', 
+                             'chest': '90', 
+                             'abdomen': '75', 
+                             'hip': '80'}, 'GET'),
+             EndpointRequest('/api/body-fat-prediction', 
+                            {'username': 'pedro', 
+                             'token': sessionToken, 
+                             'weight': '1000', 
+                             'chest': '1000', 
+                             'abdomen': '1000', 
+                             'hip': '1'}, 'GET'), 
+             EndpointRequest('/api/body-fat-prediction', 
+                            {'username': 'pedro', 
+                             'token': sessionToken, 
+                             'weight': '-1', 
+                             'chest': 'two', 
+                             'abdomen': '111', 
+                             'hip': '3'}, 'GET'),
+            ]
     
-    expectedResponses1 = [
-                         ExpectedResponse(200, {'success': True, 'message': 'Account created'}), 
-                         ExpectedResponse(400, {'success': False, 'message': 'Invalid email'}), 
-                         ExpectedResponse(400, {'success': False, 'message': 'Invalid value for username'}), 
-                         ExpectedResponse(400, {'success': False, 'message': 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol and 1 capital letter'}), 
-                         ExpectedResponse(200, {'success': True, 'message': 'Account created'}), 
-                         ExpectedResponse(400, {'success': False, 'message': 'Username already taken'}), 
-                         ExpectedResponse(200, {'success': True, 'message': 'Account created'})
-                        ]
-    
+    responses = [
+        ExpectedResponse(200, {'success': True, 'message': 'Successful prediction', 'prediction': 10}), 
+        ExpectedResponse(200, {'success': True, 'message': 'Successful prediction', 'prediction': 10}), 
+        ExpectedResponse(400, {'success': True, 'message': 'Some of the values are out of range'}), 
+    ]
+
     automator = TestAutomator('http://localhost:8080')
-    automator.checkEnpoints(testEndpoints1, expectedResponses1, 'sign-up')
-    
-    testEndpoints2 = [ 
-                     EndpointRequest('/api/sign-up', {'username': 'user1', 'password': 'Password123#', 'email': '1234'}, 'POST'), 
-                     EndpointRequest('/api/sign-up', {'username': 1234, 'password': 3345, 'email': 'false'}, 'POST'), 
-                     EndpointRequest('/api/sign-up', {'username': 'user1', 'password': '12', 'email': 'email@gmail.com'}, 'POST'), 
-                     EndpointRequest('/api/sign-up', {'username': 'user1', 'password': 'A123456#', 'email': 'email@gmail.com'}, 'POST'), 
-                     EndpointRequest('/api/sign-up', {'username': 'pedro', 'password': 'Password123#', 'email': 'email2@gmail.com'}, 'POST'),
-                     EndpointRequest('/api/sign-up', {'username': 'user3', 'password': 'Password1234#', 'email': 'email3@gmail.com'}, 'POST')
-                    ]
-    
-    expectedResponses2 = [
-                         ExpectedResponse(200, {'success': True, 'message': 'Account created'}), 
-                         ExpectedResponse(400, {'success': False, 'message': 'Invalid email'}), 
-                         ExpectedResponse(400, {'success': False, 'message': 'Invalid value for username'}), 
-                         ExpectedResponse(400, {'success': False, 'message': 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol and 1 capital letter'}), 
-                         ExpectedResponse(200, {'success': True, 'message': 'Account created'}), 
-                         ExpectedResponse(400, {'success': False, 'message': 'Username already taken'}), 
-                         ExpectedResponse(200, {'success': True, 'message': 'Account created'})
-                        ]
-    
-    automator.checkEnpoints(testEndpoints1, expectedResponses1, 'check-email')
-    
-    
-    
-    
-    
+    automator.checkEnpoints(tests, responses, 'body-fat-prediction')
