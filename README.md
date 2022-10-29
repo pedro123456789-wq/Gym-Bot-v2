@@ -1,11 +1,8 @@
 
 # Gym Bot
+##Your AI personal trainer
 
-Your AI personal trainer
-
-This is the official repository of the gym bot web application.
-
-
+The official Gym Bot github repository. 
 
 
 ## Features
