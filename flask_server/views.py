@@ -386,8 +386,7 @@ def workouts():
         except Exception as e:
             return customResponse(False, 'Invalid date format')
         
-        
-        if startDate > endDate:
+        if startTs > endTs:
             return customResponse(False, 'Start date must be before the end date')
 
         # check if targetWorkouts is valid
