@@ -1,6 +1,6 @@
 
 # Gym Bot
-##Your AI personal trainer
+## Your AI personal trainer
 
 The official Gym Bot github repository. 
 
