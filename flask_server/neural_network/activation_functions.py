@@ -10,7 +10,7 @@ class ActivationFunctions:
         return 1 - (math.tanh(x) ** 2)
 
     def sigmoid(x):
-        return 1  / (1 + math.exp(-x))
+        return 1 - 1 / (1 + math.exp(x)) if x < 0 else 1/ (1 + math.exp(-x))
 
     def sigmoidPrime(x):
         return ActivationFunctions.sigmoid(x) * (1 - ActivationFunctions.sigmoid(x))
