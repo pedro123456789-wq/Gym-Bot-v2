@@ -38,6 +38,12 @@ function ProfilePage() {
 
     function handleInputChange(e: any) {
         let { name, value } = e.target;
+
+        // if user has used backspace to leave empty input, just display a zero
+        if (value === '') {
+            value = '0';
+        }
+
         setProfileValues({ ...profileValues, [name]: parseInt(value) });
     }
 
@@ -127,6 +133,7 @@ function ProfilePage() {
 
                     <Grid item className = 'pt-4'>
                         <h3 className='text-center' style={{ color: 'white' }}>
+                            {/* get username from local storage to display at the top of the page */}
                             {window.localStorage.getItem('username')}
                         </h3>
                     </Grid>
@@ -148,7 +155,7 @@ function ProfilePage() {
                                             id={key}
                                             name={key}
                                             label={cammelCaseToText(key)}
-                                            type={key.includes('password') ? 'password' : 'text'}
+                                            type={'text'}
                                             value={value}
                                             onChange={handleInputChange}
                                             margin='normal'
