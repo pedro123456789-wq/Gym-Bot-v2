@@ -10,7 +10,7 @@ class ExpectedResponse:
 
 
 class EndpointRequest:
-    def __init__(self, url, headers, method, useJson = False):
+    def __init__(self, url, headers, method, useJson=False):
         self.url = url
         self.headers = headers
         self.method = method
@@ -44,9 +44,11 @@ class TestAutomator:
                     method=endpointRequest.method, url=f'{self.baseUrl}/{endpointRequest.url}', json=endpointRequest.headers)
             else:
                 if endpointRequest.useJson:
-                    response = requests.request(method=endpointRequest.method, url=f'{self.baseUrl}/{endpointRequest.url}', json=endpointRequest.headers)
-                else:    
-                    response = requests.request(method=endpointRequest.method, url=f'{self.baseUrl}/{endpointRequest.url}', headers=endpointRequest.headers)
+                    response = requests.request(
+                        method=endpointRequest.method, url=f'{self.baseUrl}/{endpointRequest.url}', json=endpointRequest.headers)
+                else:
+                    response = requests.request(
+                        method=endpointRequest.method, url=f'{self.baseUrl}/{endpointRequest.url}', headers=endpointRequest.headers)
 
             statusCode = response.status_code
             content = response.json()
@@ -78,35 +80,4 @@ class TestAutomator:
 
 
 if __name__ == '__main__':
-    sessionToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicGVkcm8iLCJleHAiOjE2NjY0NTkyMTh9.x2kvw6WfC_qRwjB_YzLtB_ootqPZv8KfpwnqS9seHEE'
-    tests = [EndpointRequest('/api/body-fat-prediction', 
-                            {'username': 'pedro', 
-                             'token': sessionToken, 
-                             'weight': '72', 
-                             'chest': '90', 
-                             'abdomen': '75', 
-                             'hip': '80'}, 'GET'),
-             EndpointRequest('/api/body-fat-prediction', 
-                            {'username': 'pedro', 
-                             'token': sessionToken, 
-                             'weight': '1000', 
-                             'chest': '1000', 
-                             'abdomen': '1000', 
-                             'hip': '1'}, 'GET'), 
-             EndpointRequest('/api/body-fat-prediction', 
-                            {'username': 'pedro', 
-                             'token': sessionToken, 
-                             'weight': '-1', 
-                             'chest': 'two', 
-                             'abdomen': '111', 
-                             'hip': '3'}, 'GET'),
-            ]
-    
-    responses = [
-        ExpectedResponse(200, {'success': True, 'message': 'Successful prediction', 'prediction': 10}), 
-        ExpectedResponse(200, {'success': True, 'message': 'Successful prediction', 'prediction': 10}), 
-        ExpectedResponse(400, {'success': True, 'message': 'Some of the values are out of range'}), 
-    ]
-
-    automator = TestAutomator('http://localhost:8080')
-    automator.checkEnpoints(tests, responses, 'body-fat-prediction')
+    pass 
