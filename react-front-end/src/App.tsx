@@ -18,10 +18,8 @@ import Insights from "./Components/Insights/Insights";
 
 
 // TODO:
-// Fix bugs and do improvements
+// FIX calories burned prediction model
 
-
-  
 
 function App(): JSX.Element {
   return (

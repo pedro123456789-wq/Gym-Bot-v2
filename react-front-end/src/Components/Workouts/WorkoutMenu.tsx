@@ -58,7 +58,7 @@ function WorkoutMenu({ toggleMode }: menuProps) {
 
                 setDistanceRan(totalDistance);
             } else {
-                console.log(response.message);
+                alert(response.message);
             }
         });
 

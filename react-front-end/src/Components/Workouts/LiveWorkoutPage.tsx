@@ -149,21 +149,23 @@ function LiveWorkoutPage({toggleMode}: menuProps) {
         var newList = completedExercises;
         newList.push(exercise);
         setCompletedExercises(newList);
-
-        console.log(completedExercises);
     }
 
 
     function updateTime() {
+        //only increment time if the user has started workout
         if (workoutState.hasStarted) {
+            // if user has changed the workout state (for example started a new exercise), the exercise duration seconds 
+            // must be reset to zero to start a new timer for that exercise
+            
             if (durationState.previousRunningState !== workoutState.isRunning) {
                 setDurationState({
-                    totalDurationSeconds: durationState.totalDurationSeconds + 1,
+                    totalDurationSeconds: durationState.totalDurationSeconds + 1, //the total workout duration is always incremented
                     exerciseDurationSeconds: 0,
                     previousRunningState: workoutState.isRunning
                 });
 
-                setVisibility(true);
+                setVisibility(true); //make exercise timer visible
             } else {
                 setDurationState({
                     totalDurationSeconds: durationState.totalDurationSeconds + 1,
@@ -207,6 +209,8 @@ function LiveWorkoutPage({toggleMode}: menuProps) {
 
             <div className={classes.content} style={{ 'marginTop': '15vh' }}>
                 <h3 className='text-center'>
+                    {/* if workout has started display timer, if it has finished display 'Workout Completed' and 
+                        if is has not started yet display 'Press button to start workout' */}
                     {workoutState.hasStarted ? secondsToString(durationState.totalDurationSeconds)
                         : workoutState.hasFinished ? 'Workout Completed'
                             : 'Press button to start workout'}
@@ -214,10 +218,12 @@ function LiveWorkoutPage({toggleMode}: menuProps) {
 
                 {workoutState.hasStarted &&
                     <div className='text-center'>
+                        {/* display workout set number if user is doing exercise and display 'Rest' when user is in rest mode */}
                         <h4 className='mt-5'>
                             {workoutState.isRunning ? `Set: ${workoutState.setNumber.toString()}` : 'Rest'}
-                        </h4>
+                        </h4> 
 
+                        {/* display workout timer if workout has started */}
                         {isTimeVisible &&
                             <h5>
                                 {secondsToString(durationState.exerciseDurationSeconds)}
@@ -229,6 +235,7 @@ function LiveWorkoutPage({toggleMode}: menuProps) {
                 <div style={{ 'marginTop': '15vh' }}>
                     {!workoutState.hasFinished ?
                         <Grid container spacing={2} className={classes.gridRoot}>
+                            {/* display play button when workout has not started yet or user is in 'rest' mode */}
                             {(workoutState.hasStarted === false || workoutState.isRunning === false) &&
                                 <Grid item xs={12} sm={12} md={12}>
                                     <div className={classes.optionDiv} style={{ background: 'transparent' }}>
@@ -249,6 +256,7 @@ function LiveWorkoutPage({toggleMode}: menuProps) {
                             }
 
                             {(workoutState.hasStarted === true) ?
+                                // display stop button when user is doing exercise 
                                 (workoutState.isRunning === true) ?
                                     <Grid item xs={12} sm={12} md={12} alignItems='center'>
                                         <div className={classes.optionDiv} style={{ background: 'transparent' }}>
@@ -268,6 +276,7 @@ function LiveWorkoutPage({toggleMode}: menuProps) {
                                         </div>
                                     </Grid>
                                     :
+                                    // display exit button when user is in 'rest' mode and workout has started
                                     <Grid item xs={12} sm={12} md={12}>
                                         <div className={classes.optionDiv} style={{ background: 'transparent' }}>
                                             <button className={classes.workoutButton}
