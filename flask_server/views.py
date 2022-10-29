@@ -42,9 +42,13 @@ def isSameDay(date1: datetime, date2: datetime) -> bool:
 def checkRange(data, bounds):
     for key in data:
         if key in bounds:
+            #can only perform artihmetic comparison on integers or floats 
+            if type(data[key]) != int and type(data[key]) != float:
+                return False 
+            
             if data[key] > bounds[key]['max'] or data[key] < bounds[key]['min']:
                 return False
-
+            
     return True
 
 
@@ -105,7 +109,6 @@ def signUp():
             f'Your verification code is {confirmationCode}'
         )
     except Exception as e:
-        print(e)
         print('Internal server failure')
         return customResponse(False, 'Internal server error')
 
@@ -180,18 +183,19 @@ def checkSession():
 
     return customResponse(True, f'Session is valid for {username}')
 
+# ----- !!!! waiting to see if it is save to remove !!!!-----------
+# @app.route('/api/has-profile', methods=['GET'])
+# @loginRequired(methods=['GET'])
+# def checkProfile():
+#     #this endpoint may seem redundant since its function is very similar to the /check-session-endpoint
+#     #however, the check-session endpoint 
+#     data = request.headers
+#     targetUser = User.query.filter_by(username=data.get('username')).first()
 
-@app.route('/api/has-profile', methods=['GET'])
-@loginRequired(methods=['GET'])
-def checkProfile():
-    # check if user has profile to decide wether profile creation page should be displayed or not
-    data = request.headers
-    targetUser = User.query.filter_by(username=data.get('username')).first()
-
-    if hasProfile(targetUser):
-        return customResponse(False, 'User already has profile')
-    else:
-        return customResponse(True, 'User can create new profile')
+#     if hasProfile(targetUser):
+#         return customResponse(False, 'User already has profile')
+#     else:
+#         return customResponse(True, 'User can create new profile')
 
 
 @app.route('/api/profile', methods=['GET', 'POST', 'PUT'])
@@ -211,9 +215,7 @@ def profile():
         # get class attributes from target user and return them in a dictionary
         output = vars(targetUser)
         output.pop('_sa_instance_state')
-        output['distanceRanTarget'] = output['distanceRanTarget'] / \
-            1000  # convert distance to km
-
+        output['distanceRanTarget'] = output['distanceRanTarget'] / 1000  # convert distance to km
         return customResponse(True, 'Fetched Data Successfully', data=output)
 
     # create profile by adding values to all null fields
@@ -246,13 +248,15 @@ def profile():
     elif request.method == 'PUT':
         # check if all new values are in bounds
         if not checkRange(data, validationSchemes.profileBounds):
-            return customResponse(False, 'Some of the values are out of range')
+            return customResponse(False, 'Some of the values are out of range or have the wrong data type')
 
         # only set new values if all values provided are valid
         # this has impact on performance but ensures that transactions are atomic
         for header in list(data.keys()):
-            if header != 'username' and header != 'token':
+            #only set values of new fields 
+            if header in validationSchemes.profileBounds.keys():
                 exec(f'targetUser.{header} = {data[header]}')
+                    
 
         db.session.commit()
 
@@ -378,10 +382,13 @@ def workouts():
                 startTs = datetime.strptime(startDate, dateFormat)
                 endTs = startTs + timedelta(days=1)
             else:
-                startTs, endTs = datetime.strptime(
-                    startDate, dateFormat), datetime.strptime(endDate, dateFormat)
+                startTs, endTs = datetime.strptime(startDate, dateFormat), datetime.strptime(endDate, dateFormat)
         except Exception as e:
             return customResponse(False, 'Invalid date format')
+        
+        
+        if startDate > endDate:
+            return customResponse(False, 'Start date must be before the end date')
 
         # check if targetWorkouts is valid
         if not targetWorkouts:
@@ -430,11 +437,10 @@ def workouts():
 
         # check if header values are within valid range
         if not checkRange(data, validationSchemes.workoutBounds):
-            return customResponse(False, 'Some of the bounds are out of range')
+            return customResponse(False, 'Some of the values are out of range')
 
         # create new entry in workout table
-        newWorkout = Workout(name=data.get(
-            'name'), caloriesBurned=data.get('caloriesBurned'))
+        newWorkout = Workout(name=data.get('name'), caloriesBurned=data.get('caloriesBurned'))
         db.session.add(newWorkout)
         db.session.flush()
 
@@ -521,7 +527,7 @@ def runs():
                     startTs, endTs = datetime.strptime(
                         startDate, dateFormat), datetime.strptime(endDate, dateFormat)
             except:
-                return customResponse(False, 'Invalid Date format')
+                return customResponse(False, 'Invalid date format')
 
             targetRuns = Run.query.filter((Run.completionDate <= endTs) & (
                 Run.completionDate >= startTs) & (Run.userId == targetUser.id)).all()
@@ -589,9 +595,6 @@ def insights():
             endTs += timedelta(days=1)
     except:
         return customResponse(False, 'Invalid Date format')
-
-    if startTs > endTs:
-        return customResponse(False, 'The start date must be before the end date')
 
     interval = (endTs - startTs).days
     distancesRan, timeTrained, caloriesEaten, caloriesBurned = {}, {}, {}, {}
@@ -693,8 +696,9 @@ def caloriesBurnedPrediction():
     # make prediction of calories burned and transform it back to original range
     prediction = caloriesBurnedPredictor.predict(X)
     prediction = caloriesBurnedScalerY.inverseTransform([[prediction[0]]])[0][0]
+    print(duration, heartRate, prediction)
     
-    return customResponse(True, 'Successfull prediction', prediction=round(prediction, 1))
+    return customResponse(True, 'Successful prediction', prediction=round(prediction, 1))
 
 
 @app.route('/api/food-data', methods=['GET'])
