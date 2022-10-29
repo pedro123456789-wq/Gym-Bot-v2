@@ -69,13 +69,9 @@ class Network:
         #forward propagate all inputs
         for i in range(0, len(inputData)):
             output = inputData[i]
-            print(output)
-            print(list(map(str, self.layers)))
 
             for layer in self.layers:
                 output = layer.forwardPropagate(output)
-                print(output)
-                print('--')
             
             outputs.append(output.data[0][0])
 
