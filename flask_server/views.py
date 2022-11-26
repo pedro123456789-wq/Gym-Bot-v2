@@ -46,7 +46,8 @@ def checkRange(data, bounds):
             if type(data[key]) != int and type(data[key]) != float:
                 return False 
             
-            if data[key] > bounds[key]['max'] or data[key] < bounds[key]['min']:
+            if (data[key] > bounds[key]['max'] 
+                   or data[key] < bounds[key]['min']):
                 return False
             
     return True
@@ -66,9 +67,11 @@ def signUp():
         validate(instance=data, schema=validationSchemes.signUpSchema)
     except exceptions.ValidationError as error:
         field = error.path.pop()
+        
+        return customResponse(False, error.message)
 
         if field == 'password':
-            return customResponse(False, 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol and 1 capital letter')
+            return customResponse(False, 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol,  1 capital letter and 1 number')
         elif field == 'email':
             return customResponse(False, 'Invalid email')
 
@@ -182,20 +185,6 @@ def checkSession():
     username = data.get('username')
 
     return customResponse(True, f'Session is valid for {username}')
-
-# ----- !!!! waiting to see if it is save to remove !!!!-----------
-# @app.route('/api/has-profile', methods=['GET'])
-# @loginRequired(methods=['GET'])
-# def checkProfile():
-#     #this endpoint may seem redundant since its function is very similar to the /check-session-endpoint
-#     #however, the check-session endpoint 
-#     data = request.headers
-#     targetUser = User.query.filter_by(username=data.get('username')).first()
-
-#     if hasProfile(targetUser):
-#         return customResponse(False, 'User already has profile')
-#     else:
-#         return customResponse(True, 'User can create new profile')
 
 
 @app.route('/api/profile', methods=['GET', 'POST', 'PUT'])
@@ -593,7 +582,13 @@ def insights():
                 startDate, dateFormat), datetime.strptime(endDate, dateFormat)
             endTs += timedelta(days=1)
     except:
-        return customResponse(False, 'Invalid Date format')
+        return customResponse(False, 'Invalid date format')
+    
+    print(startTs, endTs)
+    print(startTs > endTs)
+        
+    if startTs >= endTs:
+        return customResponse(False, 'Start date must be before end date')
 
     interval = (endTs - startTs).days
     distancesRan, timeTrained, caloriesEaten, caloriesBurned = {}, {}, {}, {}
