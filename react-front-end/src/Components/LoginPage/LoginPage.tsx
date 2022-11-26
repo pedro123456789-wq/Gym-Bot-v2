@@ -39,7 +39,9 @@ function LoginPage() {
     function handleSubmit(e: any) {
         e.preventDefault();
 
-        if (Object.values(loginData).includes('') || Object.values(loginData).includes(null) || Object.values(loginData).includes(undefined)) {
+        if (Object.values(loginData).includes('') || 
+            Object.values(loginData).includes(null) || 
+            Object.values(loginData).includes(undefined)) {
             setAlertState({ isShow: true, isSuccess: false, message: 'You did not enter some values' });
             setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
             setTimeout(() => setAlertState({ ...alertState, isShow: false }), 2000);

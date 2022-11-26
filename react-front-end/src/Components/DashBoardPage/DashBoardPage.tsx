@@ -96,10 +96,6 @@ const defaultLoadingState: loadingState = {
   runs: false
 }
 
-// TODO:
-// Change database to allow user to enter distance in metres
-// Add loading indicator to prevent incosistencies
-// add separate states for workouts and runs to avoid conflicts
 
 function DashBoardPage() {
   const classes = useStyles();
