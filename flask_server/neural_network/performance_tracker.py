@@ -5,7 +5,7 @@
 class PerformanceTracker:
     @staticmethod
     def getAverageAcuracy(targetValues: list, predictions: list, showData = False):
-
+        # get the average accuracy of the network
         if showData:
             for i in range(0, len(targetValues)):
                 print(targetValues[i], predictions[i])

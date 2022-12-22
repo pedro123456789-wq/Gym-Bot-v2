@@ -21,8 +21,8 @@ class Network:
         self.lossPrime = lossPrime
 
 
-    #function used to train the network
     def fit(self, xTrain, yTrain, epochs, learningRate, showLogs = True):
+        # train network through backward propagation algorithm
         samples = len(xTrain)
         trainStart = time()
         
@@ -63,6 +63,7 @@ class Network:
 
 
     def predict(self, inputData: list):
+        # predict output for given input using forward propagation
         outputs = []
         inputData = [Matrix(1, len(dataPoint), [dataPoint]) for dataPoint in inputData]
         

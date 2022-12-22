@@ -67,8 +67,6 @@ def signUp():
         validate(instance=data, schema=validationSchemes.signUpSchema)
     except exceptions.ValidationError as error:
         field = error.path.pop()
-        
-        return customResponse(False, error.message)
 
         if field == 'password':
             return customResponse(False, 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol,  1 capital letter and 1 number')

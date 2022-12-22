@@ -4,9 +4,11 @@ from random import random
 class Matrix:
     def __init__(self, rows: int, cols: int, data: list = None):
         if data == None:
+            # if no data is given initialize array full of zeros
             self.data = [[0 for _ in range(cols)]
                          for _ in range(rows)]
         else:
+            # look for descrepancies in the shape of the data and the values passed for the rows and columns
             if len(data) != rows:
                 raise ValueError('The number of rows is invalid')
 
@@ -19,11 +21,15 @@ class Matrix:
         self.cols = cols
 
     def randomInit(self):
+        # add random values to the array used to represent the matrix
         for i in range(0, self.rows):
             for x in range(0, self.cols):
                 self.data[i][x] = random()
 
     def __add__(self, other: 'Matrix') -> 'Matrix':
+        # override standard addition operator to add matrix to another matrix
+        #this function simply performs component-wise addition
+        
         if other.cols == self.cols and other.rows == self.rows:
             output = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
 
@@ -37,6 +43,8 @@ class Matrix:
             raise ValueError('Invalid matrix dimensions')
 
     def __sub__(self, other: 'Matrix'):
+        # override standard addition operator to subtract matrix from another matrix
+        #this function simply performs component-wise subtraction
         if other.cols == self.cols and other.rows == self.rows:
             output = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
 
@@ -50,6 +58,10 @@ class Matrix:
             raise ValueError('Invalid matrix dimensions')
 
     def __mul__(self, other):
+        # function used to perform matrix-matrix multiplication and matrix-scalar multiplication
+        #both forms of multiplication use the standard mathematical definitions
+        
+        # matrix-scalar multiplication
         if type(other) == float:
             output = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
 
@@ -59,6 +71,7 @@ class Matrix:
 
             return Matrix(self.rows, self.cols, output)
 
+        # matrix-matrix multiplication
         elif 'Matrix' in str(type(other)):
             if self.cols == other.rows:
                 output = [[0 for _ in range(other.cols)]
@@ -80,6 +93,7 @@ class Matrix:
             raise ValueError('Invalid operand type')
 
     def hadamardProduct(self, other: 'Matrix') -> 'Matrix':
+        # Function to compute the hadamard product of two matrices, also known as component-wise multiplication
         output = self.data
 
         if other.rows != self.rows or other.cols != self.cols:
@@ -92,6 +106,8 @@ class Matrix:
         return Matrix(self.rows, self.cols, output)
 
     def transpose(self) -> 'Matrix':
+        # Function used to transpose a matrix
+        #columns are convered into rows, but the order is perserved
         newCols = self.rows
         newRows = self.cols
 
@@ -103,6 +119,7 @@ class Matrix:
         return Matrix(newRows, newCols, output)
 
     def __str__(self) -> str:
+        # Override str() method to show a more informative represetation of the matrix
         output = 'Matrix: \n'
         for row in self.data:
             output += str(row) + '\n'

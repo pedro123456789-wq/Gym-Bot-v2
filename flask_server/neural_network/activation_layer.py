@@ -24,8 +24,8 @@ class ActivationLayer(Layer):
         self.output = Matrix(inputData.rows, inputData.cols, output)
         return self.output 
 
-    #returns input error (partial derivative of E with respect to x)
     def backPropagate(self, outputError, learningRate):
+        #returns input error (partial derivative of E with respect to x)
         output = self.inputData.data
         
         for i in range(0, len(output)):

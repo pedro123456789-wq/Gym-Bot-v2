@@ -80,8 +80,7 @@ class DataScaler:
             return False
 
     def load(self, path):
-        # load save pickle object
-
+        # load saved pickle object
         try:
             with open(f'{path}.pickle', 'rb') as stream:
                 scaler = load(stream)
