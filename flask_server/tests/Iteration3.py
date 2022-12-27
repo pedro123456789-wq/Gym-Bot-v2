@@ -1,6 +1,3 @@
-# TODO
-# /api/body-fat-prediction and /api/calories-burned-prediction tests
-
 from serverTests import EndpointRequest, ExpectedResponse, TestAutomator
 
 
