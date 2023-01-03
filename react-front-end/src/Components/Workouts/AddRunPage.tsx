@@ -10,11 +10,6 @@ import { alertType, defaultAlertState, CustomAlert } from '../CustomAlert/Custom
 import BackButton from '../BackButton/BackButton';
 
 
-
-// TODO:
-// Add back button
-// Use alert state
-
 interface run {
     distance: number | null,
     caloriesBurned: number | null,

@@ -17,11 +17,6 @@ import Profile from "./Components/Profile/Profile";
 import Insights from "./Components/Insights/Insights";
 
 
-// TODO:
-// FIX calories burned prediction model
-// Watch out for foods with names that are numbers since this seems to cause an error
-
-
 function App(): JSX.Element {
   return (
     <BrowserRouter>

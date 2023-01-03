@@ -1,3 +1,5 @@
+'''File to create and train body fat prediction model'''
+
 import pandas as pd
 from dense_layer import DenseLayer
 from activation_layer import ActivationLayer
@@ -7,8 +9,6 @@ from loss_functions import LossFunctions
 from activation_functions import ActivationFunctions
 from network import Network
 from data_scaler import DataScaler
-
-
 
 
 SAVE = True  

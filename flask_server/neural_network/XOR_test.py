@@ -4,7 +4,7 @@ from activation_functions import ActivationFunctions
 from loss_functions import LossFunctions
 from network import Network
 
-
+# test neural network class with very simple example
 if __name__ == '__main__':
     xTrain = [[0, 0], [0, 1], [1, 0], [1, 1]]
     yTrain = [0, 1, 1, 0]

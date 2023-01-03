@@ -35,10 +35,12 @@ from datetime import datetime, timedelta
 import numpy as np
 
 
+#check if two dates are in the same day
 def isSameDay(date1: datetime, date2: datetime) -> bool:
     return date1.day == date2.day and date1.month == date2.month and date1.year == date2.year
 
 
+#check if all data in headers is in the required range
 def checkRange(data, bounds):
     for key in data:
         if key in bounds:
@@ -53,6 +55,7 @@ def checkRange(data, bounds):
     return True
 
 
+#base directory
 @app.route('/api', methods=['GET'])
 def home():
     return 'Api is running ...'
@@ -60,6 +63,7 @@ def home():
 
 @app.route('/api/sign-up', methods=['POST'])
 def signUp():
+    #allow users to sign up to application
     data = request.get_json()
 
     # check if headers have valid data using json validation schemes
@@ -68,6 +72,7 @@ def signUp():
     except exceptions.ValidationError as error:
         field = error.path.pop()
 
+        #return error response that matches error type
         if field == 'password':
             return customResponse(False, 'Invalid password. Passwords must have 8+ characters, at least 1 special symbol,  1 capital letter and 1 number')
         elif field == 'email':
@@ -118,6 +123,7 @@ def signUp():
 
 @app.route('/api/confirm-email', methods=['PUT'])
 def confirmEmail():
+    # allow users to confirm their email
     data = request.get_json()
 
     # validate headers
@@ -149,8 +155,10 @@ def confirmEmail():
 
 @app.route('/api/log-in', methods=['POST'])
 def log_in():
+    #allow users to log in
     data = request.get_json()
 
+    #validate headers or request body
     try:
         validate(instance=data, schema=validationSchemes.loginSchema)
     except exceptions.ValidationError as error:
@@ -159,12 +167,15 @@ def log_in():
     username, password = data.get('username'), data.get('password')
     targetUser = User.query.filter_by(username=username).first()
 
+    # check if user has provided existing username
     if targetUser:
         targetPassword = targetUser.password
 
+        # check if user has confirmed email 
         if not targetUser.emailConfirmed:
             return customResponse(False, 'We sent you a verification code. Please check your email')
 
+        # check if provided password is correct by comparing stored hash with hash of password provided
         if encryptionHandler.check_password_hash(targetPassword, password):
             token = jwt.encode({'user': username, 'exp': datetime.utcnow() + timedelta(minutes=60)}, app.config['SECRET_KEY']).decode('utf-8')
             return customResponse(True, 'Login successful', token=str(token))
@@ -179,6 +190,7 @@ def log_in():
 @loginRequired(methods=['GET'])
 @profileRequired(methods=['GET'])
 def checkSession():
+    #check if user has a valid session
     data = request.headers
     username = data.get('username')
 
@@ -189,6 +201,10 @@ def checkSession():
 @loginRequired(['GET', 'POST', 'PUT'])
 @profileRequired(['GET', 'PUT'])
 def profile():
+    # interact with user's profile
+
+    #for request methods data is stored in request headers, but for POST and PUT requests
+    # data is stored in the request body
     if request.method == 'POST' or request.method == 'PUT':
         data = request.get_json()
         targetUser = User.query.filter_by(
@@ -254,12 +270,14 @@ def profile():
 @loginRequired(methods=['POST', 'GET'])
 @profileRequired(methods=['POST', 'GET'])
 def food():
-    # get requests recieve data through headers while other requests get data through json payload
+    #interact with Food database table
+    
     if request.method != 'GET':
         data = request.get_json()
         username = data.get('username')
         targetUser = User.query.filter_by(username=username).first()
 
+    #get data from Food table
     if request.method == 'GET':
         startDate = request.headers.get('startDate')
         endDate = request.headers.get('endDate')
@@ -298,6 +316,7 @@ def food():
 
         return customResponse(True, 'Got Data', data=foodItems)
 
+    # add data to Food table 
     elif request.method == 'POST':
         # check if headers are valid
         try:
@@ -349,11 +368,14 @@ def food():
 @loginRequired(methods=['GET', 'POST', 'PUT'])
 @profileRequired(methods=['GET', 'POST', 'PUT'])
 def workouts():
+    #interact with Workouts, Exercise and workout_exercise table
+
     if request.method != 'GET':
         data = request.get_json()
         username = data.get('username')
         targetUser = User.query.filter_by(username=username).first()
 
+    # get data from Workout table 
     if request.method == 'GET':
         targetUser = User.query.filter_by(
             username=request.headers.get('username')).first()
@@ -412,9 +434,8 @@ def workouts():
 
         return customResponse(True, 'Fetched saved workouts successfully', workouts=savedWorkouts)
 
+    # add data to Workout table
     elif request.method == 'POST':
-        '''Create new workout'''
-
         # check if request has valid headers
         try:
             validate(instance=data, schema=validationSchemes.workoutsSchema)
@@ -489,20 +510,25 @@ def workouts():
 @loginRequired(methods=['GET', 'POST', 'PUT'])
 @profileRequired(methods=['GET', 'POST', 'PUT'])
 def runs():
+    #interact with Runs database table
+
     if request.method != 'GET':
         data = request.get_json()
         targetUser = User.query.filter_by(
             username=data.get('username')).first()
 
+    # get data from Runs table
     if request.method == 'GET':
-        targetUser = User.query.filter_by(
-            username=request.headers.get('username')).first()
+        #get target user
+        targetUser = User.query.filter_by(username=request.headers.get('username')).first()
         startDate = request.headers.get('startDate')
         endDate = request.headers.get('endDate')
+
 
         if startDate == 'ALL' and endDate == 'ALL':
             targetRuns = Run.query.all()
         else:
+            # try to convert date strings into datetime objects
             try:
                 dateFormat = '%d/%m/%Y'
 
@@ -513,11 +539,14 @@ def runs():
                     startTs, endTs = datetime.strptime(
                         startDate, dateFormat), datetime.strptime(endDate, dateFormat)
             except:
+                #return error due to invalid date format
                 return customResponse(False, 'Invalid date format')
 
-            targetRuns = Run.query.filter((Run.completionDate <= endTs) & (
-                Run.completionDate >= startTs) & (Run.userId == targetUser.id)).all()
+            # database query to get the runs between the two given dates  
+            targetRuns = Run.query.filter((Run.completionDate <= endTs) 
+                                         & (Run.completionDate >= startTs) & (Run.userId == targetUser.id)).all()
 
+        #return dictionary with all the information
         outputDict = {
             'runNumber': len(targetRuns),
             'runs': [{
@@ -530,6 +559,7 @@ def runs():
 
         return customResponse(True, 'Got run data successfully', data=outputDict)
 
+    # add data to Runs table
     elif request.method == 'POST':
         # add new run to database
 
@@ -538,32 +568,29 @@ def runs():
         except exceptions.ValidationError as error:
             return customResponse(False, error.message)
 
+        # check if all headers are in the required range
         if not checkRange(data, validationSchemes.runBounds):
             return customResponse(False, 'Some of the values are out of range')
 
-        distance, durationSeconds, caloriesBurned = data.get(
-            'distance'), data.get('durationSeconds'), data.get('caloriesBurned')
+        distance, durationSeconds, caloriesBurned = data.get('distance'), data.get('durationSeconds'), data.get('caloriesBurned')
 
+        # create new run
         newRun = Run(distance=distance, durationSeconds=durationSeconds,
                      caloriesBurned=caloriesBurned)
-        targetUser.runs.append(newRun)
+        targetUser.runs.append(newRun) #link run to user with foreign key
 
         db.session.add(newRun)
         db.session.commit()
 
         return customResponse(True, 'Run saved successfully')
 
-    elif request.method == 'PUT':
-        # change data in database:
-        # delete run
-        # edit run
-        pass
-
 
 @app.route('/api/insights', methods=['GET'])
 @loginRequired(methods=['GET'])
 @profileRequired(methods=['GET'])
 def insights():
+    # get data from all tables to display in insights page
+
     data = request.headers
     targetUser = User.query.filter_by(username=data.get('username')).first()
     startDate, endDate = data.get('startDate'), data.get('endDate')
@@ -581,10 +608,8 @@ def insights():
             endTs += timedelta(days=1)
     except:
         return customResponse(False, 'Invalid date format')
-    
-    print(startTs, endTs)
-    print(startTs > endTs)
         
+    # check if end date is after start date
     if startTs >= endTs:
         return customResponse(False, 'Start date must be before end date')
 
@@ -601,14 +626,14 @@ def insights():
         caloriesEaten[dayString] = 0
         caloriesBurned[dayString] = 0
 
-    targetRuns = Run.query.filter((Run.completionDate <= endTs) & (
-        Run.completionDate >= startTs) & (Run.userId == targetUser.id)).all()
+    #get runs, food items and workouts added in the desired range
+    targetRuns = Run.query.filter((Run.completionDate <= endTs) & (Run.completionDate >= startTs) & (Run.userId == targetUser.id)).all()
     foodRecords = db.session.query(food_record).filter((food_record.c.user_id == targetUser.id) &
                                                        (food_record.c.timestamp <= endTs) &
                                                        (food_record.c.timestamp >= startTs)).all()
-    workouts = Workout.query.filter((Workout.completionDate <= endTs) & (
-        Workout.completionDate >= startTs) & (Workout.userId == targetUser.id)).all()
+    workouts = Workout.query.filter((Workout.completionDate <= endTs) & (Workout.completionDate >= startTs) & (Workout.userId == targetUser.id)).all()
 
+    # for each section of data increment the totals for each day
     for run in targetRuns:
         completionDate = run.completionDate
         dayString = f'{completionDate.day}/{completionDate.month}/{completionDate.year}'
@@ -630,6 +655,7 @@ def insights():
         timeTrained[dayString] += sum(
             [exercise.durationSeconds for exercise in workout.exercises]) / 60
 
+    # return dictionary with data
     return customResponse(True, 'Fetched data successfully', data={'distance': distancesRan,
                                                                    'time': timeTrained,
                                                                    'caloriesEaten': caloriesEaten,
@@ -641,6 +667,7 @@ def insights():
 @loginRequired(methods=['POST'])
 @profileRequired(methods=['POST'])
 def bodyFat():
+    # return body fat prediction from body measurements
     data = request.get_json()
 
     try:
@@ -667,6 +694,8 @@ def bodyFat():
 @loginRequired(methods=['POST'])
 @profileRequired(methods=['POST'])
 def caloriesBurnedPrediction():
+    # return calories burned prediction from data
+
     data = request.get_json()
     targetUser = User.query.filter_by(username=data.get('username')).first()
 
@@ -697,9 +726,11 @@ def caloriesBurnedPrediction():
 @loginRequired(methods=['GET'])
 @profileRequired(methods=['GET'])
 def foodData():
+    # return information about food item using foodData class
     data = request.headers
     queryType = data.get('queryType')
 
+    # search for item using barcode
     if queryType == 'barcode':
         barcode = data.get('barcode')
         if not barcode:
@@ -710,15 +741,18 @@ def foodData():
 
         result = FoodData.searchByBarcode(barcode)
 
+        # check if any matches were found
         if result:
             return customResponse(True, 'Found item', data=result)
         else:
             return customResponse(False, 'No matches found for this barcode')
 
+    # search for item using item name
     elif queryType == 'text':
         searchQuery = data.get('searchQuery')
         resultsNumber = data.get('resultNumber')
 
+        # validate data provided by user
         if not searchQuery or not resultsNumber:
             return customResponse(False, 'searchQuery and resultNumber are required headers')
 
@@ -730,6 +764,7 @@ def foodData():
 
         results = FoodData.getItems(searchQuery, resultsNumber)
 
+        # check if any results were found
         if len(results) > 0:
             return customResponse(True, 'Got data successfully', results=results)
         else:

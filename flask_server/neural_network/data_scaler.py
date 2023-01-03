@@ -13,9 +13,9 @@ class DataScaler:
         self.maximum = maximum
 
     def fitData(self, data: list):
-        '''Get maximum and minimum value of each column (feature) to change range of data into desired range
-           Normalizing the data will improve the performance of the neural network#
-        '''
+        # Get maximum and minimum value of each column (feature) to change range of data into desired range
+        # Normalizing the data will improve the performance of the neural network
+
         # transpose array to turn columns into rows which are easier to index
         data = Matrix(len(data), self.featureNumber, data)
         columns = data.transpose()
@@ -49,7 +49,7 @@ class DataScaler:
         return columns.transpose().data
 
     def inverseTransform(self, data: list):
-        '''use linear interpolation to get data back in original range'''
+        #use linear interpolation to get data back in original range
         data = Matrix(len(data), self.featureNumber, data)
         columns = data.transpose()
 

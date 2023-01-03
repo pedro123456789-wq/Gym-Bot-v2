@@ -4,7 +4,7 @@ from email.mime.text import MIMEText
 
 
 def sendEmail(dest, subj, body):
-    #html code
+    #html code for email
     html = f'''
     <!DOCTYPE html>
     <html>
@@ -18,6 +18,7 @@ def sendEmail(dest, subj, body):
     </html>
     '''
     
+    # email details
     senderEmail = 'pl156176@gmail.com'
     password = 'ltmmiwsaowrxbhjk'
     
