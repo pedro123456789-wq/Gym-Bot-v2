@@ -6,7 +6,7 @@ from flask_server.emailPassword import PASSWORD
 
 
 def sendEmail(dest, subj, body):
-    #html code
+    #html code for email
     html = f'''
     <!DOCTYPE html>
     <html>
@@ -20,6 +20,7 @@ def sendEmail(dest, subj, body):
     </html>
     '''
     
+    # email details
     senderEmail = 'pl156176@gmail.com'
     
     # Create a multipart email form and define the values for the from, to and subject fields.

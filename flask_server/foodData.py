@@ -89,9 +89,8 @@ class FoodData:
                                     calories: {value: float, unit: string}
                                 }
                 })
-            
-            
-        """        
+        """       
+         
         url = f'https://world.openfoodfacts.org/api/v0/product/{barcode}'
         response = requests.get(url)
         
@@ -124,9 +123,3 @@ class FoodData:
             return output
         else:
             return 'Error'
-        
-
-
-if __name__ == '__main__':
-    print(FoodData.getItems('wjadbqjwdbqwdjqhbwdqjhbdwqjhwdbj'))
-    # print(FoodData.searchByBarcode('8711'))

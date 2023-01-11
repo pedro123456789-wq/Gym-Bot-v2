@@ -1,5 +1,6 @@
 import { apiUrl } from '../GlobalVariables';
 
+// class to make sending requests to the server easier
 
 class RequestHandler {
     static async POST(url: string, payload: { [header: string]: any }): Promise<any> {

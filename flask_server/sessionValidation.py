@@ -11,6 +11,7 @@ from functools import wraps
 import jwt
 from datetime import datetime
 
+#list of all fields related with the user's account from the User table 
 accountFields = [
     'caloriesEatenTarget',
     'caloriesBurnedTarget',
