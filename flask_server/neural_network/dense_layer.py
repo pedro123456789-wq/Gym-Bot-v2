@@ -1,7 +1,7 @@
 '''Dense Layer'''
 from layer import Layer
 from flask_server.neural_network.matrix import Matrix
-
+# from matrix import Matrix
 
 class DenseLayer(Layer):
     def __init__(self, inputSize, outputSize):

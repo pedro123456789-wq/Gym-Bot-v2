@@ -2,7 +2,7 @@
 from time import time
 from pickle import dump, load
 from flask_server.neural_network.matrix import Matrix
-#from matrix import Matrix
+# from matrix import Matrix
 
 
 class Network:
