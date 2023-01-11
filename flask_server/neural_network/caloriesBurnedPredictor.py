@@ -8,7 +8,7 @@ from network import Network
 from data_scaler import DataScaler
 from dense_layer import DenseLayer
 
-SAVE = True
+SAVE = False
 
 if __name__ == '__main__':
     # -----------get data---------------
@@ -53,12 +53,12 @@ if __name__ == '__main__':
                 ActivationFunctions.sigmoidPrime))
 
     # hidden layer
-    network.add(DenseLayer(10, 10))
+    network.add(DenseLayer(10, 15))
     network.add(ActivationLayer(ActivationFunctions.RELU,
                 ActivationFunctions.RELUPrime))
 
     # output layer
-    network.add(DenseLayer(10, 1))
+    network.add(DenseLayer(15, 1))
     network.add(ActivationLayer(ActivationFunctions.sigmoid,
                 ActivationFunctions.sigmoidPrime))
 
