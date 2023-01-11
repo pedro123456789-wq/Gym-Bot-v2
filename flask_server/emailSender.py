@@ -1,6 +1,8 @@
 import smtplib, ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from flask_server.emailPassword import PASSWORD
+
 
 
 def sendEmail(dest, subj, body):
@@ -19,7 +21,6 @@ def sendEmail(dest, subj, body):
     '''
     
     senderEmail = 'pl156176@gmail.com'
-    password = 'ltmmiwsaowrxbhjk'
     
     # Create a multipart email form and define the values for the from, to and subject fields.
     message = MIMEMultipart()
@@ -34,7 +35,7 @@ def sendEmail(dest, subj, body):
     # connect to gmail server and send email 
     context = ssl.create_default_context() 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-        server.login(senderEmail, password)
+        server.login(senderEmail, PASSWORD)
         server.sendmail(senderEmail, dest, emailString)
         
     
